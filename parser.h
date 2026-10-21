@@ -24,6 +24,7 @@ Node *new_node(NodeKind kind, Node* left_hand_side, Node* right_hand_side);
 Node *new_node_number(int value);
 Node *expr();
 Node *mul();
+Node *unary();
 Node *primary();
 void generate_code(Node *node);
 

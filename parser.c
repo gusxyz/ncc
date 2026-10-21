@@ -1,10 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include "parser.h"
 #include "token.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-Node *new_node(NodeKind kind, Node* left_hand_side, Node* right_hand_side) {
-  Node* node = calloc(1, sizeof(Node));
+Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side) {
+  Node *node = calloc(1, sizeof(Node));
   node->kind = kind;
   node->left_hand_side = left_hand_side;
   node->right_hand_side = right_hand_side;
@@ -12,7 +12,7 @@ Node *new_node(NodeKind kind, Node* left_hand_side, Node* right_hand_side) {
 }
 
 Node *new_node_number(int value) {
-  Node* node = calloc(1, sizeof(Node));
+  Node *node = calloc(1, sizeof(Node));
   node->kind = NODE_NUMBER;
   node->value = value;
   return node;
@@ -20,10 +20,10 @@ Node *new_node_number(int value) {
 
 Node *expr() {
   Node *node = mul();
-  for(;;) {
-    if(consume('+'))
+  for (;;) {
+    if (consume('+'))
       node = new_node(NODE_ADD, node, mul());
-    else if(consume('-'))
+    else if (consume('-'))
       node = new_node(NODE_SUBTRACT, node, mul());
     else
       return node;
@@ -31,19 +31,29 @@ Node *expr() {
 }
 
 Node *mul() {
-  Node *node = primary();
-  for(;;) {
-    if(consume('*'))
-      node = new_node(NODE_MULTIPLY, node, primary());
-    else if(consume('/'))
-      node = new_node(NODE_DIVIDE, node, primary());
+  Node *node = unary();
+  for (;;) {
+    if (consume('*'))
+      node = new_node(NODE_MULTIPLY, node, unary());
+    else if (consume('/'))
+      node = new_node(NODE_DIVIDE, node, unary());
     else
       return node;
   }
 }
 
+Node *unary() {
+  for (;;) {
+    if (consume('+'))
+      return primary();
+    else if (consume('-'))
+      return new_node(NODE_SUBTRACT, new_node_number(0), primary());
+    return primary();
+  }
+}
+
 Node *primary() {
-  if(consume('(')) {
+  if (consume('(')) {
     Node *node = expr();
     expect(')');
     return node;
@@ -52,8 +62,8 @@ Node *primary() {
   return new_node_number(expect_number());
 }
 
-void generate_code(Node *node) { 
-  if(node->kind == NODE_NUMBER) {
+void generate_code(Node *node) {
+  if (node->kind == NODE_NUMBER) {
     printf("  push %d\n", node->value);
     return;
   }
@@ -63,8 +73,8 @@ void generate_code(Node *node) {
 
   printf("  pop rdi\n");
   printf("  pop rax\n");
-  
-  switch(node->kind) {
+
+  switch (node->kind) {
   case NODE_ADD:
     printf("  add rax, rdi\n");
     break;
