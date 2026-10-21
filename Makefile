@@ -1,5 +1,13 @@
-CLAFGS=-g -static
-ncc: ncc.c
+CC = cc
+CFLAGS = -g -Wall -Wextra
+
+OBJS = ncc.o token.o
+
+ncc: $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS)
+
+ncc.o: ncc.c token.h
+token.o: token.c token.h
 
 test: ncc
 	./test.sh
