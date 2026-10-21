@@ -5,17 +5,32 @@
 #include <stdbool.h>
 #include "token.h"
 
+Token *token;
+char *user_input;
+
 void print_header() {
   printf(".intel_syntax noprefix\n");
   printf(".global main\n");
   printf("main:\n");
 }
 
-Token *token;
-
 void error(char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
+
+void error_at(char *loc, char *fmt, ...)
+{
+  va_list ap;
+  va_start(ap, fmt);
+
+  int pos = loc - user_input;
+  fprintf(stderr, "%s\n", user_input);
+  fprintf(stderr, "%*s", pos, " "); // Print pos spaces
+  fprintf(stderr, "^ ");
   vfprintf(stderr, fmt, ap);
   fprintf(stderr, "\n");
   exit(1);
@@ -91,9 +106,6 @@ Token *tokenize(char *p){
   token_new(TK_EOF, cur, p);
   return head.next;
 }
-
-// Tokenize an input
-
 
 int main(int argc, char**argv) {
 	if(argc != 2) {
