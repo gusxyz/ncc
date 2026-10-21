@@ -2,27 +2,30 @@
 #define TOKEN_H
 
 #include <stdbool.h>
+#include <stddef.h>
+
 
 typedef enum {
-  TOKEN_RESERVED, // Symbols
-  TOKEN_NUM,      // Integer
-  TOKEN_EOF,      // End of input
+  TOKEN_RESERVED,
+  TOKEN_NUM,  
+  TOKEN_EOF,
 } TokenKind;
 
 typedef struct Token Token;
 
 struct Token {
-  TokenKind kind;    // Type
-  Token *next_token; // Reference to the next token
-  int value;         // numeric value for TK_NUM
-  char *string;      // text
+  TokenKind kind;
+  Token *next_token;
+  int value;         
+  char *string;      
+  size_t length;
 };
 
-bool consume(char op);
+bool consume(char *op);
 void expect(char op);
 int expect_number();
 bool at_eof();
-Token *token_new(TokenKind kind, Token *cur, char *str);
+Token *token_new(TokenKind kind, Token *current_token, char* string);
 Token *tokenize(char *p);
 void set_token(Token *token);
 Token *get_token();

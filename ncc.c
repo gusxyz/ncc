@@ -17,7 +17,7 @@ int main(int argc, char**argv) {
 
   set_user_input(argv[1]);
   set_token(tokenize(argv[1]));
-  Node *node = expr();
+  Node *node = expression();
 
   print_header();
   generate_code(node);

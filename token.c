@@ -1,21 +1,24 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <string.h>
 #include "token.h"
 #include "error.h"
 
 Token *global_token;
 
-void advance() {
+void advance_tokenizer() {
   global_token = global_token->next_token;
 }
 
 // if next token is the expected symbol advance and return true
 // if not return false
-bool consume(char op) {
-  if(global_token->kind != TOKEN_RESERVED || global_token->string[0] != op)
+bool consume(char *op) {
+  if(global_token->kind != TOKEN_RESERVED 
+      || strlen(op) != global_token->length
+      || memcmp(global_token->string, op, global_token->length))
     return false;
-  advance();
+  advance_tokenizer();
   return true;
 }
 
@@ -24,14 +27,14 @@ bool consume(char op) {
 void expect(char op) {
   if(global_token->kind != TOKEN_RESERVED || global_token->string[0] != op)
     error("Expected '%c'", op);
-  advance();
+  advance_tokenizer();
 }
 
 int expect_number() {
   if(global_token->kind != TOKEN_NUM)
     error("Expected a number, got token kind %d, character '%c'",global_token->kind, global_token->string[0]);
   int val = global_token->value;
-  advance();
+  advance_tokenizer();
   return val;
 }
 
@@ -44,6 +47,7 @@ Token *token_new(TokenKind kind, Token *current_token, char* string) {
   Token *token = calloc(1, sizeof(Token));
   token->kind = kind;
   token->string = string;
+  token->length = 1;
   current_token->next_token = token;
   return token;
 }
@@ -59,9 +63,19 @@ Token *tokenize(char *current_char){
       continue;
     }
 
+    if(strncmp(current_char, "==", 2) == 0 ||
+      strncmp(current_char, ">=", 2) == 0 ||
+      strncmp(current_char, "<=", 2) == 0 ||
+      strncmp(current_char, "!=", 2) == 0) {
+      current_token = token_new(TOKEN_RESERVED, current_token, current_char);
+      current_token->length = 2;
+      current_char += 2;
+    }
+
   if(*current_char == '+' || *current_char == '-' ||
   *current_char == '*' || *current_char == '/' ||
-  *current_char == '(' || *current_char == ')') {
+  *current_char == '(' || *current_char == ')' ||
+  *current_char == '<' || *current_char == '>') {
       current_token = token_new(TOKEN_RESERVED, current_token, current_char++);
       continue;
     }
