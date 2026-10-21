@@ -1,11 +1,10 @@
 CLAFGS=-g -static
-
 ncc: ncc.c
 
 test: ncc
-      ./test.sh
+	./test.sh
 
 clean:
-  rm -f ncc *.o *~ tmp*
+	rm -f ncc *.o *~ tmp*
 
 .PHONY: test clean
