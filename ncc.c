@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "token.h"
+#include "error.h"
+#include "parser.h"
 
 void print_header() {
   printf(".intel_syntax noprefix\n");
@@ -13,19 +15,17 @@ int main(int argc, char**argv) {
     return 1;
 	}
 
+  set_user_input(argv[1]);
   set_token(tokenize(argv[1]));
+  Node *node = expr();
 
   print_header();
-  printf("  mov rax, %d\n", expect_number());
-  
-  while(!at_eof()) {
-    if(consume('+')) {
-      printf("  add rax, %d\n", expect_number());
-      continue;
-    };
-    expect('-');
-    printf("  sub rax, %d\n", expect_number());
-  };
+  generate_code(node);
+
+  if (!at_eof())
+    error("Unexpected token after expression");
+
+  printf("  pop rax\n");
   printf("  ret\n");
   return 0;
 }

@@ -1,7 +1,13 @@
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "error.h"
 
 char *user_input;
+
+void set_user_input(char* new_user_input) {
+  user_input = new_user_input;
+}
 
 void error(char *fmt, ...) {
   va_list ap;

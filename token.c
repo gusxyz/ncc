@@ -1,20 +1,19 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include "token.h"
 #include "error.h"
 
-Token *token;
+Token *global_token;
 
 void advance() {
-  token = token->next;
+  global_token = global_token->next_token;
 }
 
 // if next token is the expected symbol advance and return true
 // if not return false
 bool consume(char op) {
-  if(token->kind != TK_RESERVED || token->str[0] != op)
+  if(global_token->kind != TOKEN_RESERVED || global_token->string[0] != op)
     return false;
   advance();
   return true;
@@ -23,61 +22,67 @@ bool consume(char op) {
 
 // error if next token isnt expected token
 void expect(char op) {
-  if(token->kind != TK_RESERVED || token->str[0] != op)
-    error("Expected '%c', op");
+  if(global_token->kind != TOKEN_RESERVED || global_token->string[0] != op)
+    error("Expected '%c'", op);
   advance();
 }
 
 int expect_number() {
-  if(token->kind != TK_NUM)
-    error("Expected a number");
-  int val = token->val;
+  if(global_token->kind != TOKEN_NUM)
+    error("Expected a number, got token kind %d, character '%c'",global_token->kind, global_token->string[0]);
+  int val = global_token->value;
   advance();
   return val;
 }
 
 bool at_eof() {
-  return token->kind == TK_EOF;
+  return global_token->kind == TOKEN_EOF;
 }
 
 // init a new token and link it as next
-Token *token_new(TokenKind kind, Token *cur, char* str) {
-  Token *tok = calloc(1, sizeof(Token));
-  tok->kind = kind;
-  tok->str = str;
-  cur->next = tok;
-  return tok;
+Token *token_new(TokenKind kind, Token *current_token, char* string) {
+  Token *token = calloc(1, sizeof(Token));
+  token->kind = kind;
+  token->string = string;
+  current_token->next_token = token;
+  return token;
 }
 
-Token *tokenize(char *p){
-  Token head;
-  head.next = NULL;
-  Token *cur = &head;
+Token *tokenize(char *current_char){
+  Token head_token;
+  head_token.next_token = NULL;
+  Token *current_token = &head_token;
   
-  while(*p) {
-    if(isspace(*p)) {
-      p++;
+  while(*current_char) {
+    if(isspace(*current_char)) {
+      current_char++;
       continue;
     }
 
-    if(*p == '+' || *p == '-') {
-      cur = token_new(TK_RESERVED, cur, p++);
+  if(*current_char == '+' || *current_char == '-' ||
+  *current_char == '*' || *current_char == '/' ||
+  *current_char == '(' || *current_char == ')') {
+      current_token = token_new(TOKEN_RESERVED, current_token, current_char++);
       continue;
     }
     
-    if(isdigit(*p)) {
-      cur = token_new(TK_NUM, cur, p);
-      cur->val = strtol(p, &p, 10);
+    if(isdigit(*current_char)) {
+      current_token = token_new(TOKEN_NUM, current_token, current_char);
+      current_token->value = strtol(current_char, &current_char, 10);
       continue;
     }
 
     error("Cannot tokenize input.");
   }
 
-  token_new(TK_EOF, cur, p);
-  return head.next;
+  token_new(TOKEN_EOF, current_token, current_char);
+  return head_token.next_token;
 }
 
 void set_token(Token* tok) {
-  token = tok;
+  global_token = tok;
+}
+
+Token *get_token() {
+  return global_token;
 }
