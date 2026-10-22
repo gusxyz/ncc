@@ -3,7 +3,6 @@
 
 #include <stddef.h>
 
-// Structures
 typedef enum {
   NODE_ADD,
   NODE_SUBTRACT,
@@ -19,14 +18,36 @@ typedef enum {
   NODE_ASSIGN,
   NODE_LOCAL_VARIABLE,
   NODE_RETURN,
+  NODE_IF,
+  NODE_WHILE,
+  NODE_FOR,
+  NODE_BLOCK,
+  NODE_EXPR_STMT,
 } NodeKind;
 
 typedef struct Node Node;
 
+typedef struct {
+  Node **items;
+  size_t count;
+  size_t capacity;
+} NodeArray;
+
 struct Node {
   NodeKind kind;
+
   Node *left_hand_side;
   Node *right_hand_side;
+
+  Node *cond;
+  Node *then;
+  Node *els;
+
+  Node *init;
+  Node *inc;
+
+  NodeArray body;
+
   int value;
   int offset;
 };
@@ -41,12 +62,6 @@ struct LocalVariable {
 };
 
 typedef struct {
-  Node **items;
-  size_t count;
-  size_t capacity;
-} NodeArray;
-
-typedef struct {
   NodeArray statements;
 } Program;
 
@@ -55,7 +70,7 @@ Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side);
 Node *new_node_number(int value);
 
 // Grammar
-Program *program();
+Program *parse_program();
 Node *statement();
 Node *expression();
 Node *assign();

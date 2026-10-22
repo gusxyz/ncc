@@ -28,7 +28,7 @@ bool consume_kind(TokenKind kind) {
   return true;
 }
 
-Program *program() {
+Program *parse_program() {
   Program *program = calloc(1, sizeof(Program));
 
   while (!at_eof()) {
@@ -38,10 +38,26 @@ Program *program() {
   return program;
 }
 
+Node *parse_if() {
+  Node *node = new_node(NODE_IF, NULL, NULL);
+  expect('(');
+  node->cond = expression();
+  expect(')');
+  node->then = statement();
+
+  if(consume("else"))
+      node->els = statement(); 
+
+  return node;
+}
+
 Node *statement() {
   Node *node;
 
-  if(consume_kind(TOKEN_RETURN)) {
+  if (consume_kind(TOKEN_IF))
+    return parse_if();
+
+  if (consume_kind(TOKEN_RETURN)) {
     node = calloc(1, sizeof(Node));
     node->kind = NODE_RETURN;
     node->left_hand_side = expression();
@@ -49,8 +65,9 @@ Node *statement() {
     node = expression();
   }
 
-  if(!consume(";"))
+  if (!consume(";"))
     error_at(global_token->string, "Expected a ;");
+
   return node;
 }
 
@@ -145,6 +162,13 @@ LocalVariable *new_local_variable(Token *token) {
     return local_var;
 }
 
+Node *new_node_local_variable(LocalVariable *local_var) {
+    Node *node = calloc(1, sizeof(*node));
+    node->kind = NODE_LOCAL_VARIABLE;
+    node->offset = local_var->offset;
+    return node;
+}
+
 Node *primary() {
     if (consume("(")) {
         Node *node = expression();
@@ -160,11 +184,7 @@ Node *primary() {
         if (!local_var)
             local_var = new_local_variable(identifier_token);
 
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = NODE_LOCAL_VARIABLE;
-        node->offset = local_var->offset;
-
-        return node;
+        return new_node_local_variable(local_var);
     }
 
     return new_node_number(expect_number());

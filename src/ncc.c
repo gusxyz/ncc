@@ -41,7 +41,7 @@ int main(int argc, char**argv) {
 
   // make start the recursion ya idiot
 
-  Program *prog = program();
+  Program *prog = parse_program();
 
   for (size_t i = 0; i < prog->statements.count; i++) {
     Node* node = prog->statements.items[i];

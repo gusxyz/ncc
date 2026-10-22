@@ -11,6 +11,7 @@ typedef enum {
   TOKEN_IDENTIFIER,
   TOKEN_EOF,
   TOKEN_RETURN,
+  TOKEN_IF,
 } TokenKind;
 
 typedef struct Token Token;

@@ -1,46 +1,53 @@
 #include <stdio.h>
 #include <codegen.h>
 #include <error.h>
+#include <emit.h>
 
 void generate_local_variable(Node* node) {
   if(node->kind != NODE_LOCAL_VARIABLE)
     error("Left-hand side of assignemnt is not a variable");
-
-  printf("  mov rax, rbp\n");
-  printf("  sub rax, %d\n", node->offset);
-  printf("  push rax\n");
+  emit("mov rax, rbp");
+  emit("sub rax, %d", node->offset);
+  emit("push rax");
 }
 
 void generate_assign(Node *node) {
     generate_local_variable(node->left_hand_side);
     generate_code(node->right_hand_side);
 
-    printf("  pop rdi\n");
-    printf("  pop rax\n");
-    printf("  mov [rax], rdi\n");
-    printf("  push rdi\n");
+    emit("pop rdi");
+    emit("pop rax");
+    emit("mov [rax], rdi");
+    emit("push rdi");
+}
+
+
+static int label_counter;
+
+void generate_if(Node *node) {
+  // implement
 }
 
 void generate_code(Node *node) {
   // NUMBERS, VARIABLES AND ASSIGNMENTS FIRST.
   if(node->kind == NODE_RETURN) {
     generate_code(node->left_hand_side);
-    printf("  pop rax\n");
-    printf("  mov rsp, rbp\n");
-    printf("  pop rbp\n");
-    printf("  ret\n");
+    emit("pop rax");
+    emit("mov rsp, rbp");
+    emit("pop rbp");
+    emit("ret");
     return;
   }
 
   switch(node->kind) {
   case NODE_NUMBER:
-    printf("  push %d\n", node->value);
+    emit("push %d", node->value);
     return;
   case NODE_LOCAL_VARIABLE:
     generate_local_variable(node);
-    printf("  pop rax\n");
-    printf("  mov rax, [rax]\n");
-    printf("  push rax\n");
+    emit("pop rax");
+    emit("mov rax, [rax]");
+    emit("push rax");
     return;
   case NODE_ASSIGN:
     generate_assign(node);
@@ -53,44 +60,44 @@ void generate_code(Node *node) {
   generate_code(node->right_hand_side);
 
   // Pop last two Ints from the stack so we can do math.
-  printf("  pop rdi\n");
-  printf("  pop rax\n");
+  emit("pop rdi");
+  emit("pop rax");
 
   switch (node->kind) {
   case NODE_ADD:
-    printf("  add rax, rdi\n");
+    emit("add rax, rdi");
     break;
   case NODE_SUBTRACT:
-    printf("  sub rax, rdi\n");
+    emit("sub rax, rdi");
     break;
   case NODE_EQUALS:
-    printf("  cmp rax, rdi\n");
-    printf("  sete al\n");
-    printf("  movzx rax, al\n");
+    emit("cmp rax, rdi");
+    emit("sete al");
+    emit("movzx rax, al");
     break;
   case NODE_NOT_EQUALS:
-    printf("  cmp rax, rdi\n");
-    printf("  setne al\n");
-    printf("  movzx rax, al\n");
+    emit("cmp rax, rdi");
+    emit("setne al");
+    emit("movzx rax, al");
     break;
   case NODE_LESS_THAN:
-    printf("  cmp rax, rdi\n");
-    printf("  setl al\n");
-    printf("  movzx rax, al\n");
+    emit("cmp rax, rdi");
+    emit("setl al");
+    emit("movzx rax, al");
     break;
   case NODE_EQUAL_OR_LESS_THAN:
-    printf("  cmp rax, rdi\n");
-    printf("  setle al\n");
-    printf("  movzx rax, al\n");
+    emit("cmp rax, rdi");
+    emit("setle al");
+    emit("movzx rax, al");
     break;
   case NODE_MULTIPLY:
-    printf("  imul rax, rdi\n");
+    emit("imul rax, rdi");
     break;
   case NODE_DIVIDE:
-    printf("  cqo\n");
-    printf("  idiv rdi\n");
+    emit("cqo");
+    emit("idiv rdi");
     break;
   }
 
-  printf("  push rax\n");
+  emit("push rax");
 }
