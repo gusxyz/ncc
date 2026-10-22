@@ -39,7 +39,7 @@ struct Node {
   Node *left_hand_side;
   Node *right_hand_side;
 
-  Node *cond;
+  Node *condition;
   Node *then;
   Node *els;
 

@@ -18,3 +18,11 @@ void emit_label(const char *fmt, ...) {
     fputs(":\n", stdout);
     va_end(args);
 }
+
+void emit_directive(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stdout, fmt, args);
+    fputc('\n', stdout);
+    va_end(args);
+}

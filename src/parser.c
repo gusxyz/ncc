@@ -41,12 +41,21 @@ Program *parse_program() {
 Node *parse_if() {
   Node *node = new_node(NODE_IF, NULL, NULL);
   expect('(');
-  node->cond = expression();
+  node->condition = expression();
   expect(')');
   node->then = statement();
 
-  if(consume("else"))
+  if(consume_kind(TOKEN_ELSE))
       node->els = statement(); 
+  return node;
+}
+
+Node *parse_while() {
+  Node *node = new_node(NODE_WHILE, NULL, NULL);
+  expect('(');
+  node->condition = expression();
+  expect(')');
+  node->then = statement();
 
   return node;
 }
@@ -56,6 +65,9 @@ Node *statement() {
 
   if (consume_kind(TOKEN_IF))
     return parse_if();
+
+  if (consume_kind(TOKEN_WHILE))
+    return parse_while();
 
   if (consume_kind(TOKEN_RETURN)) {
     node = calloc(1, sizeof(Node));

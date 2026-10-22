@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <codegen.h>
 #include <error.h>
 #include <emit.h>
@@ -13,7 +12,7 @@ void generate_local_variable(Node* node) {
 
 void generate_assign(Node *node) {
     generate_local_variable(node->left_hand_side);
-    generate_code(node->right_hand_side);
+    generate_expression(node->right_hand_side);
 
     emit("pop rdi");
     emit("pop rax");
@@ -21,25 +20,11 @@ void generate_assign(Node *node) {
     emit("push rdi");
 }
 
+static int next_label_id;
+int new_label() { return next_label_id++; }
 
-static int label_counter;
-
-void generate_if(Node *node) {
-  // implement
-}
-
-void generate_code(Node *node) {
-  // NUMBERS, VARIABLES AND ASSIGNMENTS FIRST.
-  if(node->kind == NODE_RETURN) {
-    generate_code(node->left_hand_side);
-    emit("pop rax");
-    emit("mov rsp, rbp");
-    emit("pop rbp");
-    emit("ret");
-    return;
-  }
-
-  switch(node->kind) {
+void generate_expression(Node *node) {
+ switch(node->kind) {
   case NODE_NUMBER:
     emit("push %d", node->value);
     return;
@@ -56,8 +41,8 @@ void generate_code(Node *node) {
     break;
   }
 
-  generate_code(node->left_hand_side);
-  generate_code(node->right_hand_side);
+  generate_expression(node->left_hand_side);
+  generate_expression(node->right_hand_side);
 
   // Pop last two Ints from the stack so we can do math.
   emit("pop rdi");
@@ -97,7 +82,67 @@ void generate_code(Node *node) {
     emit("cqo");
     emit("idiv rdi");
     break;
+  default:
+    error("Invalid expression node kind %d", node->kind);
   }
-
   emit("push rax");
+}
+
+void generate_return(Node* node) {
+    generate_expression(node->left_hand_side);
+    emit("pop rax");
+    emit("mov rsp, rbp");
+    emit("pop rbp");
+    emit("ret");
+}
+
+void generate_if(Node *node) {
+  int id = new_label();
+  
+  generate_expression(node->condition);
+
+  emit("pop rax");
+  emit("cmp rax, 0");
+
+  if(node->els) {
+    emit("je .L.else.%d", id);
+    generate_statement(node->then);
+    emit("jmp .L.end.%d", id);
+
+    emit_label(".L.else.%d", id);
+    generate_statement(node->els);
+
+    emit_label(".L.end.%d", id);
+
+  } else {
+    emit("je .L.end.%d", id);
+    generate_statement(node->then);        
+    emit_label(".L.end.%d", id);
+  }
+}
+
+void generate_while(Node *node) {
+  int id = new_label();
+  
+  emit_label(".L.while.%d", id);
+  generate_expression(node->condition);
+  emit("pop rax");
+  emit("cmp rax, 0");
+  emit("je .L.end.%d", id);
+  generate_statement(node->then);
+  emit("jmp .L.while.%d", id);
+  emit_label(".L.end.%d", id);
+}
+
+void generate_statement(Node *node) {
+  // NUMBERS, VARIABLES AND ASSIGNMENTS FIRST.
+  if(node->kind == NODE_RETURN)
+    return generate_return(node);
+  if(node->kind == NODE_WHILE)
+    return generate_while(node);
+  if(node->kind == NODE_IF)
+    return generate_if(node);
+
+  generate_expression(node);
+  emit("pop rax");
 }

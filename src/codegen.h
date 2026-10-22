@@ -3,6 +3,7 @@
 
 #include <parser.h>
 
-void generate_code(Node *node);
+void generate_statement(Node *node);
+void generate_expression(Node *node);
 
 #endif

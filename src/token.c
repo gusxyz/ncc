@@ -91,7 +91,6 @@ Token *tokenize(char *current_char){
     }
 
     int char_length = operator_length(current_char);
-
     if(char_length > 0) {
       current_token = token_new(TOKEN_RESERVED, current_token, current_char);
       current_token->length = char_length;
@@ -99,21 +98,26 @@ Token *tokenize(char *current_char){
       continue;
     }
 
-    if (strncmp(current_char, "return", 6) == 0 && !is_shmalnum(current_char[6])) {
-      current_token = token_new(TOKEN_RETURN, current_token, current_char);
-      current_token->length = 6;
-      current_char += 6;
-      continue;
-    }
+    if (isalpha(*current_char) || *current_char == '_') {
+      char *start = current_char;
 
-    if(isalpha(*current_char) || *current_char == '_') {
-      char *start_char = current_char;
-      
-      while(isalnum(*current_char) || *current_char == '_')
+      while (isalnum(*current_char) || *current_char == '_')
         current_char++;
 
-      current_token = token_new(TOKEN_IDENTIFIER, current_token, start_char);
-      current_token->length = current_char - start_char;
+      int length = current_char - start;
+      TokenKind kind = TOKEN_IDENTIFIER;
+
+      if (length == 2 && strncmp(start, "if", 2) == 0)
+        kind = TOKEN_IF;
+      else if (length == 4 && strncmp(start, "else", 4) == 0)
+        kind = TOKEN_ELSE;
+      else if (length == 6 && strncmp(start, "return", 6) == 0)
+        kind = TOKEN_RETURN;
+      else if (length == 5 && strncmp(start, "while", 5) == 0)
+        kind = TOKEN_WHILE;
+
+      current_token = token_new(kind, current_token, start);
+      current_token->length = length;
       continue;
     }
 
