@@ -22,6 +22,14 @@ bool consume(char *op) {
   return true;
 }
 
+Token *consume_identifier() {
+  if (global_token->kind != TOKEN_IDENTIFIER)
+    return NULL;
+
+  Token *token = global_token;
+  advance_tokenizer();
+  return token;
+}
 
 // error if next token isnt expected token
 void expect(char op) {
@@ -31,7 +39,7 @@ void expect(char op) {
 }
 
 int expect_number() {
-  if(global_token->kind != TOKEN_NUM)
+  if(global_token->kind != TOKEN_NUMBER)
     error("Expected a number, got token kind %d, character '%c'",global_token->kind, global_token->string[0]);
   int val = global_token->value;
   advance_tokenizer();
@@ -52,6 +60,25 @@ Token *token_new(TokenKind kind, Token *current_token, char* string) {
   return token;
 }
 
+static int operator_length(const char* op) {
+  for(int i = 0; i < sizeof(operators) / sizeof(*operators); i++) {
+    int length = strlen(operators[i]);
+
+    if (strncmp(op, operators[i], length) == 0)
+      return length;
+  }
+
+  return 0;
+}
+
+// dogshit hack
+int is_shmalnum(char c) {
+  return ('a' <= c && c <= 'z') ||
+         ('A' <= c && c <= 'Z') ||
+         ('0' <= c && c <= '9') ||
+         (c == '_');
+}
+
 Token *tokenize(char *current_char){
   Token head_token;
   head_token.next_token = NULL;
@@ -63,25 +90,35 @@ Token *tokenize(char *current_char){
       continue;
     }
 
-    if(strncmp(current_char, "==", 2) == 0 ||
-      strncmp(current_char, ">=", 2) == 0 ||
-      strncmp(current_char, "<=", 2) == 0 ||
-      strncmp(current_char, "!=", 2) == 0) {
-      current_token = token_new(TOKEN_RESERVED, current_token, current_char);
-      current_token->length = 2;
-      current_char += 2;
-    }
+    int char_length = operator_length(current_char);
 
-  if(*current_char == '+' || *current_char == '-' ||
-  *current_char == '*' || *current_char == '/' ||
-  *current_char == '(' || *current_char == ')' ||
-  *current_char == '<' || *current_char == '>') {
-      current_token = token_new(TOKEN_RESERVED, current_token, current_char++);
+    if(char_length > 0) {
+      current_token = token_new(TOKEN_RESERVED, current_token, current_char);
+      current_token->length = char_length;
+      current_char += char_length;
       continue;
     }
-    
+
+    if (strncmp(current_char, "return", 6) == 0 && !is_shmalnum(current_char[6])) {
+      current_token = token_new(TOKEN_RETURN, current_token, current_char);
+      current_token->length = 6;
+      current_char += 6;
+      continue;
+    }
+
+    if(isalpha(*current_char) || *current_char == '_') {
+      char *start_char = current_char;
+      
+      while(isalnum(*current_char) || *current_char == '_')
+        current_char++;
+
+      current_token = token_new(TOKEN_IDENTIFIER, current_token, start_char);
+      current_token->length = current_char - start_char;
+      continue;
+    }
+
     if(isdigit(*current_char)) {
-      current_token = token_new(TOKEN_NUM, current_token, current_char);
+      current_token = token_new(TOKEN_NUMBER, current_token, current_char);
       current_token->value = strtol(current_char, &current_char, 10);
       continue;
     }

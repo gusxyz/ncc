@@ -3,12 +3,14 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-
+#include "parser.h"
 
 typedef enum {
   TOKEN_RESERVED,
-  TOKEN_NUM,  
+  TOKEN_NUMBER,
+  TOKEN_IDENTIFIER,
   TOKEN_EOF,
+  TOKEN_RETURN,
 } TokenKind;
 
 typedef struct Token Token;
@@ -21,7 +23,17 @@ struct Token {
   size_t length;
 };
 
+static const char *operators[] = {
+    "==", "!=", "<=", ">=",
+    "+", "-", "*", "/",
+    "(", ")", "<", ">",
+    "=", ";", "{", "}"
+};
+
+extern Token *global_token;
+
 bool consume(char *op);
+Token* consume_identifier();
 void expect(char op);
 int expect_number();
 bool at_eof();
@@ -29,5 +41,6 @@ Token *token_new(TokenKind kind, Token *current_token, char* string);
 Token *tokenize(char *p);
 void set_token(Token *token);
 Token *get_token();
+void advance_tokenizer();
 
 #endif

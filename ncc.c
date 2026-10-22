@@ -2,11 +2,28 @@
 #include "token.h"
 #include "error.h"
 #include "parser.h"
+#include "codegen.h"
 
 void print_header() {
   printf(".intel_syntax noprefix\n");
   printf(".global main\n");
   printf("main:\n");
+}
+
+void allocate_prologue() {
+  // Function prologue
+  // Allocate space for 26 variables
+  printf("  push rbp\n");
+  printf("  mov rbp, rsp\n");
+  printf("  sub rsp, 208\n");
+}
+
+void epilogue() {
+  // Function epilogue
+  // Leave's last functions result in rax
+  printf("  mov rsp, rbp\n");
+  printf("  pop rbp\n");
+  printf("  ret\n");
 }
 
 int main(int argc, char**argv) {
@@ -17,15 +34,23 @@ int main(int argc, char**argv) {
 
   set_user_input(argv[1]);
   set_token(tokenize(argv[1]));
-  Node *node = expression();
 
   print_header();
-  generate_code(node);
+  allocate_prologue();
+  
 
-  if (!at_eof())
-    error("Unexpected token after expression");
+  // make start the recursion ya idiot
 
-  printf("  pop rax\n");
-  printf("  ret\n");
+  Program *prog = program();
+
+  for (size_t i = 0; i < prog->statements.count; i++) {
+    Node* node = prog->statements.items[i];
+    generate_code(node);
+
+    if(node->kind != NODE_RETURN)
+      printf("  pop rax\n");
+  }
+
+  epilogue();
   return 0;
 }
