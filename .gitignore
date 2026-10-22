@@ -4,3 +4,4 @@ compile_commands.json
 tmp*
 a.out
 ncc
+build/

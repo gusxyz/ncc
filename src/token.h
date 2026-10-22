@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include "parser.h"
+#include <parser.h>
 
 typedef enum {
   TOKEN_RESERVED,

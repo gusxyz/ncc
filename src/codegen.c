@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "codegen.h"
-#include "error.h"
+#include <codegen.h>
+#include <error.h>
 
 void generate_local_variable(Node* node) {
   if(node->kind != NODE_LOCAL_VARIABLE)

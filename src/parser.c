@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "parser.h"
-#include "token.h"
-#include "da.h"
-#include "error.h"
+#include <parser.h>
+#include <token.h>
+#include <da.h>
+#include <error.h>
 
 Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side) {
   Node *node = calloc(1, sizeof(Node));

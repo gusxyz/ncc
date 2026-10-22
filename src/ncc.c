@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "token.h"
-#include "error.h"
-#include "parser.h"
-#include "codegen.h"
+#include <token.h>
+#include <error.h>
+#include <parser.h>
+#include <codegen.h>
 
 void print_header() {
   printf(".intel_syntax noprefix\n");
