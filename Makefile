@@ -1,21 +1,19 @@
 CC = cc
-CFLAGS = -g -Wall -Wextra
+CFLAGS = -g -Wall -Wextra -Isrc
 
-OBJS = ncc.o token.o parser.o error.o codegen.o
+SRCS = $(wildcard src/*.c)
+OBJS = $(SRCS:.c=.o)
 
 ncc: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS)
 
-ncc.o: ncc.c token.h
-token.o: token.c token.h
-parser.o: parser.c parser.h
-error.o: error.c error.h
-codegen.o: codegen.c codegen.h
+src/%.o: src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 test: ncc
 	./test.sh
 
 clean:
-	rm -f ncc *.o *~ tmp*
+	rm -f ncc src/*.o tmp*
 
 .PHONY: test clean
