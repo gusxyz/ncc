@@ -30,6 +30,33 @@ bool consume_kind(TokenKind kind) {
   return true;
 }
 
+LocalVariable *find_lvar(Token* token) {
+  for (LocalVariable *var = locals; var; var = var->next) 
+    if(var->length == token->length && !memcmp(token->string, var->name, var->length))
+      return var;
+  return NULL;
+}
+
+LocalVariable *new_local_variable(Token *token) {
+    LocalVariable *local_var = calloc(1, sizeof(LocalVariable));
+
+    local_var->name = token->string;
+    local_var->length = token->length;
+    local_var->offset = locals ? locals->offset + 8 : 8;
+
+    local_var->next = locals;
+    locals = local_var;
+
+    return local_var;
+}
+
+Node *new_node_local_variable(LocalVariable *local_var) {
+    Node *node = calloc(1, sizeof(*node));
+    node->kind = NODE_LOCAL_VARIABLE;
+    node->offset = local_var->offset;
+    return node;
+}
+
 Function *parse_function() {
   if (!consume_kind(TOKEN_INT))
     error_at(global_token->string, "Expected 'int'");
@@ -136,9 +163,36 @@ Node *parse_for() {
     return node;
 }
 
+Node *parse_decleration() { 
+  Token *name = consume_identifier();
+  
+  if(!name)
+    error_at(global_token->string, "Expected a variable name");
+
+  if(find_lvar(name))
+    error_at(global_token->string, "Variable already declared");
+
+  LocalVariable *variable = new_local_variable(name);
+
+  Node *block = new_node(NODE_BLOCK, NULL, NULL);
+  
+  if(consume("=")) {
+    Node *left = new_node_local_variable(variable);
+    Node *right = assign();
+
+    Node *init = new_node(NODE_ASSIGN, left, right);
+    da_append(&block->body, init);
+  }
+
+  expect(';');
+  return block;
+}
+
 Node *statement() {
   Node *node;
-
+  
+  if (consume_kind(TOKEN_INT))
+    return parse_decleration();
   if (consume_kind(TOKEN_IF))
     return parse_if();
   if (consume_kind(TOKEN_WHILE))
@@ -256,33 +310,6 @@ Node *postfix() {
     }
 }
 
-LocalVariable *find_lvar(Token* token) {
-  for (LocalVariable *var = locals; var; var = var->next) 
-    if(var->length == token->length && !memcmp(token->string, var->name, var->length))
-      return var;
-  return NULL;
-}
-
-LocalVariable *new_local_variable(Token *token) {
-    LocalVariable *local_var = calloc(1, sizeof(LocalVariable));
-
-    local_var->name = token->string;
-    local_var->length = token->length;
-    local_var->offset = locals ? locals->offset + 8 : 8;
-
-    local_var->next = locals;
-    locals = local_var;
-
-    return local_var;
-}
-
-Node *new_node_local_variable(LocalVariable *local_var) {
-    Node *node = calloc(1, sizeof(*node));
-    node->kind = NODE_LOCAL_VARIABLE;
-    node->offset = local_var->offset;
-    return node;
-}
-
 Node *primary() {
     if (consume("(")) {
         Node *node = expression();
@@ -315,7 +342,7 @@ Node *primary() {
       LocalVariable *local_var = find_lvar(identifier_token);
 
       if (!local_var)
-          local_var = new_local_variable(identifier_token);
+        error_at(identifier_token->string, "Undeclared variable");
 
       return new_node_local_variable(local_var);
     }
