@@ -41,13 +41,19 @@ bool is_type_start() {
 }
 
 Type *parse_type() {
-  if(consume_kind(TOKEN_INT))
-    return type_int;
-  if(consume_kind(TOKEN_U8))
-    return type_u8;
+  Type *type;
 
-  error_at(global_token->string, "Expected a type");
-  return NULL;
+  if (consume_kind(TOKEN_INT))
+    type = type_int;
+  else if (consume_kind(TOKEN_U8))
+    type = type_u8;
+  else
+    error_at(global_token->string, "Expected a type");
+
+  while (consume("*"))
+    type = pointer_to(type);
+
+  return type;
 }
 
 LocalVariable *find_lvar(Token* token) {
@@ -318,6 +324,28 @@ Node *unary() {
     return new_node(NODE_PRE_INCREMENT, unary(), NULL);
   if (consume("--"))
     return new_node(NODE_PRE_DECREMENT, unary(), NULL);
+  if (consume("*")) {
+    Node *operand = unary();
+
+    if (!operand->type || operand->type->kind != TYPE_POINTER)
+      error("Cannot dereference a non-pointer");
+
+    Node *node = new_node(NODE_DEREFERENCE, operand, NULL);
+    node->type = operand->type->base;
+    return node;
+  }
+
+  if (consume("&")) {
+    Node *operand = unary();
+
+    if (operand->kind != NODE_LOCAL_VARIABLE &&
+        operand->kind != NODE_DEREFERENCE)
+      error("Cannot take address of a non-lvalue");
+
+    Node *node = new_node(NODE_ADDRESS, operand, NULL);
+    node->type = pointer_to(operand->type);
+    return node;
+  }
   return postfix();
 }
 

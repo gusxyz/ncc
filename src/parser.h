@@ -32,6 +32,8 @@ typedef enum {
   NODE_BREAK,
   NODE_CONTINUE,
   NODE_FUNCTION_CALL,
+  NODE_ADDRESS,
+  NODE_DEREFERENCE,
 } NodeKind;
 
 typedef struct Node Node;

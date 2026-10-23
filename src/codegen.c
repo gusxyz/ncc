@@ -1,3 +1,4 @@
+#include "parser.h"
 #include "type.h"
 #include <codegen.h>
 #include <error.h>
@@ -44,26 +45,42 @@ static void load_local_value(Type *type, const char *reg) {
     emit("mov %s, QWORD PTR [rax]", reg);
 }
 
+void generate_lvalue_address(Node* node) {
+  if(node->kind == NODE_LOCAL_VARIABLE) {
+    emit("mov rax, rbp");
+    emit("sub rax, %d", node->offset);
+    emit("push rax");
+    return;
+  }
+  if(node->kind == NODE_DEREFERENCE) {
+    generate_expression(node->left_hand_side);
+    return;
+  }
+
+  error("Expression is not assignable");
+}
+
 void generate_local_variable(Node* node) {
   if(node->kind != NODE_LOCAL_VARIABLE)
     error("Left-hand side of assignemnt is not a variable");
   
-  emit("mov rax, rbp");
-  emit("sub rax, %d", node->offset);
-  emit("push rax");
+  generate_lvalue_address(node);
 }
 
 void generate_assign(Node *node) {
-    generate_local_variable(node->left_hand_side);
-    generate_expression(node->right_hand_side);
-    Type *type = node->left_hand_side->type;
+  generate_lvalue_address(node->left_hand_side);
+  generate_expression(node->right_hand_side);
 
-    emit("pop rdi");
-    emit("pop rax");
-    emit("mov %s PTR [rax], %s", get_type_size(type), get_type_reg(type));
-    if (type->kind == TYPE_U8)
-      emit("movzx edi, dil");
-    emit("push rdi");
+  Type *type = node->left_hand_side->type;
+
+  emit("pop rdi");
+  emit("pop rax");
+  emit("mov %s PTR [rax], %s", get_type_size(type), get_type_reg(type));
+
+  if (type->kind == TYPE_U8)
+    emit("movzx edi, dil");
+
+  emit("push rdi");
 }
 
 void generate_pre_increment(Node *node) {
@@ -156,18 +173,7 @@ void generate_function(Function *function) {
     epilogue();
 }
 
-void generate_program(Program *program) {
-  print_header();
-  for(size_t i = 0; i <program->functions.count; i++)
-    generate_function(program->functions.items[i]);
-}
-
-void generate_expression(Node *node) {
- switch(node->kind) {
-  case NODE_NUMBER:
-    emit("push %d", node->value);
-    return;
-  case NODE_FUNCTION_CALL:
+void generate_function_call(Node* node){
     int count = node->arguments.count;
     if (count > 6)
       error("At most 6 arguments supported");
@@ -189,6 +195,21 @@ void generate_expression(Node *node) {
     
     emit("mov rsp, [rsp]");
     emit("push rax");
+}
+
+void generate_program(Program *program) {
+  print_header();
+  for(size_t i = 0; i <program->functions.count; i++)
+    generate_function(program->functions.items[i]);
+}
+
+void generate_expression(Node *node) {
+ switch(node->kind) {
+  case NODE_NUMBER:
+    emit("push %d", node->value);
+    return;
+  case NODE_FUNCTION_CALL:
+    generate_function_call(node);
     return;
   case NODE_LOCAL_VARIABLE:
     generate_local_variable(node);
@@ -198,6 +219,18 @@ void generate_expression(Node *node) {
     else
       emit("mov rax, QWORD PTR [rax]");
     emit("push rax");
+    return;
+  case NODE_DEREFERENCE:
+    generate_expression(node->left_hand_side);
+    emit("pop rax");
+    if (node->type->kind == TYPE_U8)
+      emit("movzx rax, BYTE PTR [rax]");
+    else
+      emit("mov rax, QWORD PTR [rax]");
+    emit("push rax");
+    return;
+  case NODE_ADDRESS:
+    generate_lvalue_address(node->left_hand_side);
     return;
   case NODE_ASSIGN:
     generate_assign(node);

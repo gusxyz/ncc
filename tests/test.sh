@@ -517,4 +517,16 @@ assert_program 43 'int main() { u8 b=1; int a=42; return a+b; }'
 # u8 function parameter
 assert_program 1 'int get(u8 x) { return x; } int main() { return get(257); }'
 
+# Pointers: address-of and dereference
+assert 42 'int x=42; int *p; p=&x; return *p;'
+assert 9 'int x; *(&x)=9; return x;'
+assert 7 'int x=1; int *p; p=&x; *p=7; return x;'
+
+# Pointer aliases and reassignment
+assert 42 'int x=42; int *p; int *q; p=&x; q=p; return *q;'
+assert 7 'int x=1; int y=7; int *p; p=&x; p=&y; return *p;'
+
+# Pointers to u8
+assert 255 'u8 x=255; u8 *p; p=&x; return *p;'
+assert 9 'u8 x=1; u8 *p; p=&x; *p=9; return x;'
 finish || exit 1
