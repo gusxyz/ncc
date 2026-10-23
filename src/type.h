@@ -3,6 +3,7 @@
 
 typedef enum {
     TYPE_INT,
+    TYPE_U8,
     TYPE_POINTER,
 } TypeKind;
 

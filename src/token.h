@@ -17,6 +17,7 @@ typedef enum {
   TOKEN_BREAK,
   TOKEN_CONTINUE,
   TOKEN_INT,
+  TOKEN_U8,
 } TokenKind;
 
 typedef struct Token Token;
