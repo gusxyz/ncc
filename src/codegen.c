@@ -72,12 +72,12 @@ void print_header() {
   emit_directive(".global main");
 }
 
-void allocate_prologue() {
+void allocate_prologue(int stack_size) {
   // Function prologue
   // Allocate space for 26 variables
   emit("push rbp");
   emit("mov rbp, rsp");
-  emit("sub rsp, 208");
+  emit("sub rsp, %d", stack_size);
 }
 
 void epilogue() {
@@ -90,7 +90,7 @@ void epilogue() {
 
 void generate_function(Function *function) {
     emit_label("%s", function->name);
-    allocate_prologue();
+    allocate_prologue(function->stack_size);
 
     for(size_t i = 0; i < function->arguments.count; i++) {
       LocalVariable *argument = function->arguments.items[i];

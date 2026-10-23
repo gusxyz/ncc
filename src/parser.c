@@ -66,6 +66,9 @@ Function *parse_function() {
 
   function->body = parse_block();
 
+  int bytes = locals ? locals->offset : 0;
+  function->stack_size = (bytes + 15) / 16 * 16;
+
   return function;
 }
 

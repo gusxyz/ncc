@@ -81,6 +81,7 @@ typedef struct {
   char *name;
   Node *body;
   ArgumentArray arguments;
+  int stack_size;
 } Function;
 
 typedef struct {
