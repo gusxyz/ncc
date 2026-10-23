@@ -78,6 +78,18 @@ int is_shmalnum(char c) {
          (c == '_');
 }
 
+static TokenKind keyword_kind(const char *text, size_t length) {
+  for (size_t i = 0; i < sizeof(keywords) / sizeof(keywords[0]); i++) {
+    size_t keyword_length = strlen(keywords[i].name);
+
+    if (length == keyword_length &&
+        memcmp(text, keywords[i].name, length) == 0)
+      return keywords[i].kind;
+  }
+
+  return TOKEN_IDENTIFIER;
+}
+
 Token *tokenize(char *current_char){
   Token head_token;
   head_token.next_token = NULL;
@@ -104,28 +116,8 @@ Token *tokenize(char *current_char){
         current_char++;
 
       int length = current_char - start;
-      TokenKind kind = TOKEN_IDENTIFIER;
 
-      if (length == 2 && strncmp(start, "if", 2) == 0)
-        kind = TOKEN_IF;
-      else if (length == 4 && strncmp(start, "else", 4) == 0)
-        kind = TOKEN_ELSE;
-      else if (length == 6 && strncmp(start, "return", 6) == 0)
-        kind = TOKEN_RETURN;
-      else if (length == 5 && strncmp(start, "while", 5) == 0)
-        kind = TOKEN_WHILE;
-      else if (length == 3 && strncmp(start, "for", 3) == 0)
-        kind = TOKEN_FOR;
-      else if (length == 5 && strncmp(start, "break", 5) == 0)
-        kind = TOKEN_BREAK;
-      else if (length == 8 && strncmp(start, "continue", 8) == 0)
-        kind = TOKEN_CONTINUE;
-      else if (length == 3 && strncmp(start, "int", 3) == 0)
-        kind = TOKEN_INT;
-      else if (length == 2 && strncmp(start, "u8", 2) == 0)
-        kind = TOKEN_U8;
-
-      current_token = token_new(kind, current_token, start);
+      current_token = token_new(keyword_kind(start, length), current_token, start);
       current_token->length = length;
       continue;
     }
