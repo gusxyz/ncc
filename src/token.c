@@ -120,6 +120,8 @@ Token *tokenize(char *current_char){
         kind = TOKEN_BREAK;
       else if (length == 8 && strncmp(start, "continue", 8) == 0)
         kind = TOKEN_CONTINUE;
+      else if (length == 3 && strncmp(start, "int", 3) == 0)
+        kind = TOKEN_INT;
 
       current_token = token_new(kind, current_token, start);
       current_token->length = length;

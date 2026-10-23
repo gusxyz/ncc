@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <parser.h>
 
 typedef enum {
   TOKEN_RESERVED,
@@ -17,6 +16,7 @@ typedef enum {
   TOKEN_FOR,
   TOKEN_BREAK,
   TOKEN_CONTINUE,
+  TOKEN_INT,
 } TokenKind;
 
 typedef struct Token Token;
@@ -34,7 +34,7 @@ static const char *operators[] = {
     "++", "--",
     "+", "-", "*", "/",
     "(", ")", "<", ">",
-    "=", ";", "{", "}"
+    "=", ";", "{", "}", ",",
 };
 
 extern Token *global_token;

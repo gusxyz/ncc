@@ -2,6 +2,10 @@
 #include <error.h>
 #include <emit.h>
 
+static const char *argument_registers[] = {
+  "rdi", "rsi", "rdx", "rcx", "r8", "r9",
+};
+
 void generate_local_variable(Node* node) {
   if(node->kind != NODE_LOCAL_VARIABLE)
     error("Left-hand side of assignemnt is not a variable");
@@ -62,10 +66,76 @@ static int continue_label = -1;
 
 int new_label() { return next_label_id++; }
 
+void print_header() {
+  emit_directive(".intel_syntax noprefix");
+  emit_directive(".text");
+  emit_directive(".global main");
+}
+
+void allocate_prologue() {
+  // Function prologue
+  // Allocate space for 26 variables
+  emit("push rbp");
+  emit("mov rbp, rsp");
+  emit("sub rsp, 208");
+}
+
+void epilogue() {
+  // Function epilogue
+  // Leave's last functions result in rax
+  emit("mov rsp, rbp");
+  emit("pop rbp");
+  emit("ret");
+}
+
+void generate_function(Function *function) {
+    emit_label("%s", function->name);
+    allocate_prologue();
+
+    for(size_t i = 0; i < function->arguments.count; i++) {
+      LocalVariable *argument = function->arguments.items[i];
+      emit("mov [rbp-%d], %s",
+          argument->offset,
+          argument_registers[i]);
+    }
+
+    generate_statement(function->body);
+    emit("mov rax, 0");
+    epilogue();
+}
+
+void generate_program(Program *program) {
+  print_header();
+  for(size_t i = 0; i <program->functions.count; i++)
+    generate_function(program->functions.items[i]);
+}
+
 void generate_expression(Node *node) {
  switch(node->kind) {
   case NODE_NUMBER:
     emit("push %d", node->value);
+    return;
+  case NODE_FUNCTION_CALL:
+    int count = node->arguments.count;
+    if (count > 6)
+      error("At most 6 arguments supported");
+
+    for (int i = 0; i < count; i++)
+      generate_expression(node->arguments.items[i]);
+    for(int i = count; i > 0; i--) {
+      emit("pop %s", argument_registers[i -1]);
+    }
+
+    // stack alignment
+    emit("mov rax, rsp");
+    emit("and rsp, -16");
+    emit("sub rsp, 16");
+    emit("mov [rsp], rax");
+
+    emit("call %s", node->function_name);
+    
+    emit("mov rsp, [rsp]");
+    emit("push rax");
     return;
   case NODE_LOCAL_VARIABLE:
     generate_local_variable(node);

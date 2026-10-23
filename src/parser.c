@@ -6,6 +6,8 @@
 #include <da.h>
 #include <error.h>
 
+LocalVariable *locals;
+
 Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side) {
   Node *node = calloc(1, sizeof(Node));
   node->kind = kind;
@@ -28,11 +30,50 @@ bool consume_kind(TokenKind kind) {
   return true;
 }
 
+Function *parse_function() {
+  if (!consume_kind(TOKEN_INT))
+    error_at(global_token->string, "Expected 'int'");
+
+  Token *name = consume_identifier();
+  if (!name)
+    error_at(global_token->string, "Expected a function name");
+
+  Function *function = calloc(1, sizeof(Function));
+
+  function->name = calloc(name->length + 1, sizeof(char));
+  memcpy(function->name, name->string, name->length);
+
+  locals = NULL;  expect('(');
+
+  if(!consume(")")) {
+    do {
+      if(!consume_kind(TOKEN_INT))
+        error_at(global_token->string, "Expected argument type 'int'");
+
+      Token *param_name = consume_identifier();
+      if(!param_name)
+        error_at(global_token->string, "Expected an argument name");
+      if(find_lvar(param_name))
+        error_at(global_token->string, "Duplicate argument name");
+      if(function->arguments.count >= 6)
+        error_at(param_name->string, "At most 6 paramaters allowed");
+
+      LocalVariable *argument = new_local_variable(param_name);
+      da_append(&function->arguments, argument);
+    } while(consume(","));
+    expect(')');
+  }
+
+  function->body = parse_block();
+
+  return function;
+}
+
 Program *parse_program() {
   Program *program = calloc(1, sizeof(Program));
 
   while (!at_eof()) {
-    da_append(&program->statements, statement());
+    da_append(&program->functions, parse_function());
   }
 
   return program;
@@ -212,8 +253,6 @@ Node *postfix() {
     }
 }
 
-LocalVariable *locals;
-
 LocalVariable *find_lvar(Token* token) {
   for (LocalVariable *var = locals; var; var = var->next) 
     if(var->length == token->length && !memcmp(token->string, var->name, var->length))
@@ -251,12 +290,31 @@ Node *primary() {
     Token *identifier_token = consume_identifier();
 
     if (identifier_token) {
-        LocalVariable *local_var = find_lvar(identifier_token);
+      // its a function  
+      if(consume("(")) {
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = NODE_FUNCTION_CALL;
 
-        if (!local_var)
-            local_var = new_local_variable(identifier_token);
+        size_t length = identifier_token->length;
+        node->function_name = calloc(length +1, sizeof(char));
+        memcpy(node->function_name, identifier_token->string, length);
 
-        return new_node_local_variable(local_var);
+        if(!consume(")")) {
+          do {
+            da_append(&node->arguments, assign());
+          } while(consume(","));
+
+          expect(')');
+        }
+        return node;
+      }
+
+      LocalVariable *local_var = find_lvar(identifier_token);
+
+      if (!local_var)
+          local_var = new_local_variable(identifier_token);
+
+      return new_node_local_variable(local_var);
     }
 
     return new_node_number(expect_number());

@@ -1,6 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <token.h>
 #include <stddef.h>
 
 typedef enum {
@@ -29,6 +30,7 @@ typedef enum {
   NODE_POST_DECREMENT,
   NODE_BREAK,
   NODE_CONTINUE,
+  NODE_FUNCTION_CALL,
 } NodeKind;
 
 typedef struct Node Node;
@@ -53,9 +55,11 @@ struct Node {
   Node *inc;
 
   NodeArray body;
+  NodeArray arguments;
 
   int value;
   int offset;
+  char *function_name;
 };
 
 typedef struct LocalVariable LocalVariable;
@@ -68,15 +72,36 @@ struct LocalVariable {
 };
 
 typedef struct {
-  NodeArray statements;
+  LocalVariable **items;
+  size_t count;
+  size_t capacity;
+} ArgumentArray;
+
+typedef struct {
+  char *name;
+  Node *body;
+  ArgumentArray arguments;
+} Function;
+
+typedef struct {
+  Function **items;
+  size_t count;
+  size_t capacity;
+} FunctionArray;
+
+typedef struct {
+  FunctionArray functions;
 } Program;
 
 // Functions
 Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side);
 Node *new_node_number(int value);
+LocalVariable *find_lvar(Token *token);
+LocalVariable *new_local_variable(Token *token);
 
 // Grammar
 Program *parse_program();
+Node* parse_block();
 Node *statement();
 Node *expression();
 Node *assign();
