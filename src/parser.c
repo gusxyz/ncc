@@ -33,7 +33,8 @@ bool consume_kind(TokenKind kind) {
 }
 
 bool is_type_start() {
-  if(global_token->kind == TOKEN_INT)
+  if(global_token->kind == TOKEN_INT ||
+    global_token->kind == TOKEN_U8)
     return true;
 
   return false;
@@ -42,7 +43,9 @@ bool is_type_start() {
 Type *parse_type() {
   if(consume_kind(TOKEN_INT))
     return type_int;
-  
+  if(consume_kind(TOKEN_U8))
+    return type_u8;
+
   error_at(global_token->string, "Expected a type");
   return NULL;
 }
@@ -60,9 +63,10 @@ LocalVariable *new_local_variable(Token *token, Type *type) {
     local_var->name = token->string;
     local_var->length = token->length;
     local_var->type = type;
+    int used = locals ? locals->offset : 0;
+    int end = used + type->size;
 
-    local_var->offset = locals ? locals->offset + 8 : 8;
-
+    local_var->offset = (end + type->alignment - 1) / type->alignment * type->alignment;
     local_var->next = locals;
     locals = local_var;
 
@@ -78,15 +82,14 @@ Node *new_node_local_variable(LocalVariable *local_var) {
 }
 
 Function *parse_function() {
-  if (!consume_kind(TOKEN_INT))
-    error_at(global_token->string, "Expected 'int'");
+  Type *type = parse_type();
 
   Token *name = consume_identifier();
   if (!name)
     error_at(global_token->string, "Expected a function name");
 
   Function *function = calloc(1, sizeof(Function));
-  function->return_type = type_int; // actually will fetch type later
+  function->return_type = type;
 
   function->name = calloc(name->length + 1, sizeof(char));
   memcpy(function->name, name->string, name->length);
@@ -95,19 +98,18 @@ Function *parse_function() {
 
   if(!consume(")")) {
     do {
-      if(!consume_kind(TOKEN_INT))
-        error_at(global_token->string, "Expected argument type 'int'");
-
+      Type *parameter_type = parse_type();
+    
       Token *param_name = consume_identifier();
       if(!param_name)
         error_at(global_token->string, "Expected an argument name");
       if(find_lvar(param_name))
         error_at(global_token->string, "Duplicate argument name");
-      if(function->arguments.count >= 6)
+      if(function->paramaters.count >= 6)
         error_at(param_name->string, "At most 6 paramaters allowed");
 
-      LocalVariable *argument = new_local_variable(param_name, type_int);
-      da_append(&function->arguments, argument);
+      LocalVariable *argument = new_local_variable(param_name, parameter_type);
+      da_append(&function->paramaters, argument);
     } while(consume(","));
     expect(')');
   }

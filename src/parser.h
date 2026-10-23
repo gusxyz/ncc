@@ -79,12 +79,12 @@ typedef struct {
   LocalVariable **items;
   size_t count;
   size_t capacity;
-} ArgumentArray;
+} ParamaterArray;
 
 typedef struct {
   char *name;
   Node *body;
-  ArgumentArray arguments;
+  ParamaterArray paramaters;
   int stack_size;
   Type *return_type;
 } Function;

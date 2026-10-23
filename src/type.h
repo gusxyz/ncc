@@ -17,6 +17,7 @@ struct Type {
 };
 
 extern Type *type_int;
+extern Type *type_u8;
 
 Type *pointer_to(Type *base);
 

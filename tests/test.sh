@@ -9,7 +9,7 @@ if (( BASH_VERSINFO[0] < 5 || (BASH_VERSINFO[0] == 5 && BASH_VERSINFO[1] < 1) ))
   exit 1
 fi
 
-JOBS=${JOBS:-8}
+JOBS=${JOBS:-$(nproc)} # fast as lightning baby
 NCC=${NCC:-./build/ncc}
 CC=${CC:-cc}
 if [[ ! "$JOBS" =~ ^[1-9][0-9]{0,3}$ ]]; then
@@ -24,6 +24,12 @@ failed=0
 submitted=0
 cleanup_success=0
 declare -A running=()
+declare -A durations=() labels=()
+total_us=0
+suite_start=${EPOCHREALTIME/[.,]/}
+
+# fmt_ms VAR MICROSECONDS -> sets VAR to e.g. "12.3"
+fmt_ms() { printf -v "$1" '%d.%d' $(( $2 / 1000 )) $(( ($2 % 1000) / 100 )); }
 
 cleanup() {
   if (( cleanup_success )); then
@@ -78,7 +84,7 @@ run_error() {
 
 # Only the parent updates counters and prints complete worker logs.
 reap_one() {
-  local completed status id
+  local completed status id us ms
   wait -n -p completed "${!running[@]}"
   status=$?
   if [[ -z "${completed:-}" ]]; then
@@ -88,6 +94,14 @@ reap_one() {
   id=${running[$completed]}
   unset 'running[$completed]'
   cat "$work_root/$id/output.log"
+
+  us=0
+  read -r us < "$work_root/$id/time_us" 2>/dev/null || us=0
+  durations[$id]=$us
+  total_us=$((total_us + us))
+  fmt_ms ms "$us"
+  printf '  [test #%s: %s ms]\n' "$id" "$ms"
+
   if (( status == 0 )); then
     passed=$((passed + 1))
   else
@@ -105,7 +119,14 @@ submit() {
   submitted=$((submitted + 1))
   id=$submitted
   mkdir "$work_root/$id" || exit 1
-  ( "$runner" "$work_root/$id" "$@" ) > "$work_root/$id/output.log" 2>&1 &
+  labels[$id]="${*: -1}"   # last arg is the source/program text
+  (
+    start=${EPOCHREALTIME/[.,]/}
+    "$runner" "$work_root/$id" "$@"
+    rc=$?
+    printf '%s\n' $(( ${EPOCHREALTIME/[.,]/} - start )) > "$work_root/$id/time_us"
+    exit "$rc"
+  ) > "$work_root/$id/output.log" 2>&1 &
   pid=$!
   running[$pid]=$id
 }
@@ -114,10 +135,35 @@ assert_program() { submit run_program "$1" "$2"; }
 assert() { assert_program "$1" "int main() { $2 }"; }
 assert_error() { submit run_error "$1" "$2"; }
 
+print_timing() {
+  local wall_us=$(( ${EPOCHREALTIME/[.,]/} - suite_start ))
+  local wall sum avg tps speedup id ms
+  (( wall_us > 0 )) || wall_us=1
+  fmt_ms wall "$wall_us"
+  fmt_ms sum "$total_us"
+  fmt_ms avg $(( submitted ? total_us / submitted : 0 ))
+  tps=$(( submitted * 10000000 / wall_us ))   # tests/sec x10
+  speedup=$(( total_us * 10 / wall_us ))      # x10
+
+  printf '\n--- Timing ---\n'
+  printf 'Wall time:      %s ms\n' "$wall"
+  printf 'Sum of tests:   %s ms (avg %s ms/test)\n' "$sum" "$avg"
+  printf 'Throughput:     %d.%d tests/sec\n' $((tps / 10)) $((tps % 10))
+  printf 'Parallelism:    %d.%dx effective (%s jobs)\n' $((speedup / 10)) $((speedup % 10)) "$JOBS"
+  printf 'Slowest 5:\n'
+  for id in "${!durations[@]}"; do
+    printf '%s\t%s\n' "${durations[$id]}" "${labels[$id]}"
+  done | sort -t$'\t' -k1,1nr | head -5 | while IFS=$'\t' read -r us src; do
+    fmt_ms ms "$us"
+    printf '  %8s ms  %s\n' "$ms" "$src"
+  done
+}
+
 finish() {
   while (( ${#running[@]} )); do
     reap_one
   done
+  print_timing
   if (( failed )); then
     printf '\n%s passed, %s failed (%s total).\n' "$passed" "$failed" "$submitted" >&2
     return 1
@@ -452,4 +498,23 @@ assert_program 6 'int increment(int a) { int b=a+1; return b; } int main() { ret
 assert_error 'Undeclared variable' 'int main() { a=5; return a; }'
 assert_error 'Undeclared variable' 'int main() { return missing; }'
 assert_error 'Variable already declared' 'int main() { int a; int a; return 0; }'
+
+# u8 storage and conversion
+assert_program 255 'int main() { u8 x = 255; return x; }'
+assert_program 233 'int main() { u8 x = 233; return x; }'
+assert_program 254 'int main() { u8 x = 253; return x+1; }'
+
+# u8 increment and decrement
+assert_program 0 'int main() { u8 x = 255; ++x; return x; }'
+assert_program 255 'int main() { u8 x = 255; int old=x++; return old+x; }'
+assert_program 255 'int main() { u8 x = 0; --x; return x; }'
+assert_program 0 'int main() { u8 x = 0; int old=x--; return old; }'
+
+# Mixed local sizes: try both stack layouts
+assert_program 43 'int main() { int a=42; u8 b=1; return a+b; }'
+assert_program 43 'int main() { u8 b=1; int a=42; return a+b; }'
+
+# u8 function parameter
+assert_program 1 'int get(u8 x) { return x; } int main() { return get(257); }'
+
 finish || exit 1

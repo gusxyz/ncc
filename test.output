@@ -1,0 +1,525 @@
+./tests/test.sh
+int main() { return 0; } => 0
+  [test #1: 15.1 ms]
+int main() { return 42; } => 42
+  [test #2: 16.5 ms]
+int main() { return 5+5; } => 10
+  [test #3: 11.3 ms]
+int main() { return 50+50; } => 100
+  [test #4: 16.7 ms]
+int main() { return 1+2+3+4+5+6; } => 21
+  [test #5: 11.3 ms]
+int main() { return 10-5; } => 5
+  [test #6: 15.3 ms]
+int main() { return 5-5; } => 0
+  [test #7: 11.0 ms]
+int main() { return 20-5-5; } => 10
+  [test #8: 12.4 ms]
+int main() { return 10-4-3; } => 3
+  [test #9: 14.2 ms]
+int main() { return 6*7; } => 42
+  [test #10: 10.2 ms]
+int main() { return 10*10; } => 100
+  [test #11: 12.1 ms]
+int main() { return 2*3*4; } => 24
+  [test #12: 14.9 ms]
+int main() { return 100*0; } => 0
+  [test #13: 13.6 ms]
+int main() { return 10/2; } => 5
+  [test #14: 16.0 ms]
+int main() { return 10/3; } => 3
+  [test #15: 15.4 ms]
+int main() { return 8/4; } => 2
+  [test #16: 10.1 ms]
+int main() { return 20/5/2; } => 2
+  [test #17: 11.8 ms]
+int main() { return 5+6*7; } => 47
+  [test #18: 15.4 ms]
+int main() { return 5*(9-6); } => 15
+  [test #19: 14.2 ms]
+int main() { return (3+5)/2; } => 4
+  [test #20: 11.9 ms]
+int main() { return 2+3*4; } => 14
+  [test #21: 16.2 ms]
+int main() { return (2+3)*4; } => 20
+  [test #22: 16.0 ms]
+int main() { return 1+2*3; } => 7
+  [test #23: 15.8 ms]
+int main() { return 1+2*3+2; } => 9
+  [test #24: 12.0 ms]
+int main() { return 2*3+4*5; } => 26
+  [test #25: 15.1 ms]
+int main() { return 20-3*2; } => 14
+  [test #26: 15.2 ms]
+int main() { return 100/5/2; } => 10
+  [test #27: 11.4 ms]
+int main() { return 2+3*5; } => 17
+  [test #28: 10.8 ms]
+int main() { return (1+2)*(3+4); } => 21
+  [test #29: 10.2 ms]
+int main() { return ((2+3)*4); } => 20
+  [test #30: 14.9 ms]
+int main() { return (((10))); } => 10
+  [test #31: 10.3 ms]
+int main() { return 2*(3+(4)); } => 14
+  [test #32: 10.5 ms]
+int main() { return (2+3)*(4+5); } => 45
+  [test #33: 9.2 ms]
+int main() { return (10-(4+3)); } => 3
+  [test #34: 9.6 ms]
+int main() { return +5; } => 5
+  [test #35: 10.3 ms]
+int main() { return -(-5); } => 5
+  [test #36: 9.5 ms]
+int main() { return - -5; } => 5
+  [test #37: 9.0 ms]
+int main() { return +-(+(-(-5))); } => 251
+  [test #38: 15.3 ms]
+int main() { return 5==5; } => 1
+  [test #39: 13.8 ms]
+int main() { return 5==6; } => 0
+  [test #40: 12.0 ms]
+int main() { return 5!=6; } => 1
+  [test #41: 10.3 ms]
+int main() { return 5!=5; } => 0
+  [test #42: 9.8 ms]
+int main() { return 2+3==5; } => 1
+  [test #43: 14.6 ms]
+int main() { return 2*3==3*2; } => 1
+  [test #44: 9.2 ms]
+int main() { return 2+3!=5; } => 0
+  [test #45: 9.3 ms]
+int main() { return 3<5; } => 1
+  [test #46: 9.2 ms]
+int main() { return 5<3; } => 0
+  [test #47: 12.1 ms]
+int main() { return 5<5; } => 0
+  [test #48: 9.3 ms]
+int main() { return 3<=5; } => 1
+  [test #49: 10.9 ms]
+int main() { return 5<=5; } => 1
+  [test #50: 10.3 ms]
+int main() { return 6<=5; } => 0
+  [test #51: 10.0 ms]
+int main() { return 5>3; } => 1
+  [test #52: 8.5 ms]
+int main() { return 3>5; } => 0
+  [test #53: 9.6 ms]
+int main() { return 5>5; } => 0
+  [test #54: 9.8 ms]
+int main() { return 5>=3; } => 1
+  [test #55: 9.8 ms]
+int main() { return 5>=5; } => 1
+  [test #56: 10.7 ms]
+int main() { return 3>=5; } => 0
+  [test #57: 13.4 ms]
+int main() { return 2+3==5; } => 1
+  [test #58: 9.9 ms]
+int main() { return 2*3>5; } => 1
+  [test #59: 9.4 ms]
+int main() { return 10/2<=5; } => 1
+  [test #60: 13.5 ms]
+int main() { return 2+3*4==14; } => 1
+  [test #61: 10.7 ms]
+int main() { return (2+3)*4>15; } => 1
+  [test #62: 9.6 ms]
+int main() { return 2+3*4<10; } => 0
+  [test #63: 13.4 ms]
+int main() { return 5+5>=2*5; } => 1
+  [test #64: 12.4 ms]
+int main() { return 1<2<3; } => 1
+  [test #65: 13.4 ms]
+int main() { return 3<2<1; } => 1
+  [test #66: 9.6 ms]
+int main() { return 3>2>0; } => 1
+  [test #67: 9.9 ms]
+int main() { return 1==1==1; } => 1
+  [test #68: 9.6 ms]
+int main() { return 1==1==0; } => 0
+  [test #69: 9.3 ms]
+int main() { return 1<2==1; } => 1
+  [test #70: 14.3 ms]
+int main() { return 5>3!=0; } => 1
+  [test #71: 13.4 ms]
+int main() { return -5<3; } => 1
+  [test #72: 11.6 ms]
+int main() { return -5<-3; } => 1
+  [test #73: 9.2 ms]
+int main() { return -3>-5; } => 1
+  [test #74: 13.7 ms]
+int main() { return -5<=-5; } => 1
+  [test #75: 10.2 ms]
+int main() { return -3>=-5; } => 1
+  [test #76: 10.0 ms]
+int main() { return -5>3; } => 0
+  [test #77: 8.9 ms]
+int main() { return 10/3; } => 3
+  [test #78: 13.7 ms]
+int main() { return 8/3; } => 2
+  [test #79: 9.1 ms]
+int main() { return 1/2; } => 0
+  [test #80: 10.4 ms]
+int main() { return 0/5; } => 0
+  [test #81: 14.3 ms]
+int main() { return 11/2; } => 5
+  [test #82: 9.4 ms]
+int main() { return 5/3; } => 1
+  [test #83: 14.2 ms]
+int main() { 1; 2; return 3; } => 3
+  [test #84: 9.0 ms]
+int main() { 5; 10; return 15; } => 15
+  [test #85: 13.9 ms]
+int main() { 1+2; return 6*7; } => 42
+  [test #86: 10.0 ms]
+int main() { 2+3; return 4+5; } => 9
+  [test #87: 10.0 ms]
+int main() { 10; return 5*4; } => 20
+  [test #88: 9.3 ms]
+int main() { int a; a=5; return a; } => 5
+  [test #89: 13.8 ms]
+int main() { int a; a=10; return a; } => 10
+  [test #90: 13.6 ms]
+int main() { int a; int b; a=5; b=10; return a+b; } => 15
+  [test #91: 13.2 ms]
+int main() { int a; int b; a=10; b=2; return a*b; } => 20
+  [test #92: 9.2 ms]
+int main() { int a; int b; a=20; b=4; return a/b; } => 5
+  [test #93: 11.4 ms]
+int main() { int a; int b; a=5; b=5; return a==b; } => 1
+  [test #94: 9.5 ms]
+int main() { int a; int b; a=3; b=7; return a<b; } => 1
+  [test #95: 9.0 ms]
+int main() { int a; int b; a=7; b=3; return a>b; } => 1
+  [test #96: 9.8 ms]
+int main() { int a; a=5; a=10; return a; } => 10
+  [test #97: 14.5 ms]
+int main() { int a; a=5; a=a+10; return a; } => 15
+  [test #98: 11.5 ms]
+int main() { int a; a=5; a=a*a; return a; } => 25
+  [test #99: 9.5 ms]
+int main() { int a; a=10; a=a-7; return a; } => 3
+  [test #100: 10.2 ms]
+int main() { int a; int b; a=b=7; return a+b; } => 14
+  [test #101: 14.3 ms]
+int main() { int a; int b; int c; a=b=c=10; return a+b+c; } => 30
+  [test #102: 13.3 ms]
+int main() { int a; int b; a=b=21; return a+b; } => 42
+  [test #103: 9.5 ms]
+int main() { int a; int b; a=b=5; return a; } => 5
+  [test #104: 9.7 ms]
+int main() { int a; return (a=5)+a; } => 10
+  [test #105: 11.4 ms]
+int main() { int a; int b; a=5; b=(a=10); return a+b-5; } => 15
+  [test #106: 9.8 ms]
+int main() { int a; return (a=5)==5; } => 1
+  [test #107: 9.6 ms]
+int main() { int a; int b; a=2; b=3; return a+b*4; } => 14
+  [test #108: 10.2 ms]
+int main() { int a; int b; a=2; b=3; return (a+b)*4; } => 20
+  [test #109: 9.9 ms]
+int main() { int a; int b; a=5; b=10; return a*2==b; } => 1
+  [test #110: 13.7 ms]
+int main() { int a; int b; a=5; b=10; return a<b; } => 1
+  [test #111: 10.3 ms]
+int main() { int foo; int bar; foo=5; bar=5; return foo+bar; } => 10
+  [test #112: 9.7 ms]
+int main() { if (1) return 10; return 20; } => 10
+  [test #113: 12.4 ms]
+int main() { int foo; int bar; foo=5; bar=2; if (foo<bar) return 10; return 20; } => 20
+  [test #114: 11.6 ms]
+int main() { if (1) return 10; else return 20; } => 10
+  [test #115: 10.9 ms]
+int main() { if (0) return 10; else return 20; } => 20
+  [test #116: 9.4 ms]
+int main() { if (1) if (0) return 10; else return 30; return 20; } => 30
+  [test #117: 9.9 ms]
+int main() { if (0) return 10; else if (1) return 40; else return 20; } => 40
+  [test #118: 13.1 ms]
+int main() { int a; a=0; while(a<5) a=a+1; return a; } => 5
+  [test #119: 10.2 ms]
+int main() { int a; a=0; while(a<10) a=a+1; return a; } => 10
+  [test #120: 10.7 ms]
+int main() { int a; a=0; while(0) a=a+1; return a; } => 0
+  [test #121: 9.3 ms]
+int main() { int a; a=10; while(a<5) a=a+1; return a; } => 10
+  [test #122: 10.3 ms]
+int main() { int a; a=10; while(a>0) a=a-1; return a; } => 0
+  [test #123: 9.8 ms]
+int main() { int a; int b; a=0; while(a<3) a=a+1; b=0; while(b<3) b=b+1; return a+b; } => 6
+  [test #124: 8.9 ms]
+int main() { int a; a=0; while(a<10) if(a<5) a=a+2; else a=a+1; return a; } => 10
+  [test #125: 9.5 ms]
+int main() { { return 10; } } => 10
+  [test #126: 10.9 ms]
+int main() { int a; int b; { a=10; b=10; return a+b; } } => 20
+  [test #127: 11.5 ms]
+int main() { int a; a=1; { a=42; } return a; } => 42
+  [test #128: 9.7 ms]
+int main() { int a; int sum; a=1; sum=0; while(a<=10) { sum=sum+a; a=a+1; } return sum; } => 55
+  [test #129: 9.3 ms]
+int main() { int a; a=0; if(1) { a=10; a=a+20; } else { a=100; } return a; } => 30
+  [test #130: 9.4 ms]
+int main() { int a; a=0; if(0) { a=10; } else { a=100; } return a; } => 100
+  [test #131: 11.3 ms]
+int main() { int a; int b; { a=5; { b=10; } return a+b; } } => 15
+  [test #132: 9.3 ms]
+int main() { int i; i=5; return ++i; } => 6
+  [test #133: 9.8 ms]
+int main() { int i; i=5; ++i; return i; } => 6
+  [test #134: 9.6 ms]
+int main() { int i; i=5; return ++i*2; } => 12
+  [test #135: 10.5 ms]
+int main() { int i; int a; i=5; a=++i; return a+1; } => 7
+  [test #136: 9.4 ms]
+int main() { int i; i=0; ++i; ++i; ++i; return i; } => 3
+  [test #137: 12.9 ms]
+int main() { int i; i=5; return i++; } => 5
+  [test #138: 13.6 ms]
+int main() { int i; i=5; i++; return i; } => 6
+  [test #139: 9.9 ms]
+int main() { int i; i=5; return i++*2; } => 10
+  [test #140: 10.6 ms]
+int main() { int i; int a; i=5; a=i++; return a+i; } => 11
+  [test #141: 14.0 ms]
+int main() { int i; int a; i=5; a=i++*2; return a+i; } => 16
+  [test #142: 9.5 ms]
+int main() { int i; i=0; i++; i++; i++; return i; } => 3
+  [test #143: 8.8 ms]
+int main() { int i; i=5; return --i; } => 4
+  [test #144: 9.1 ms]
+int main() { int i; i=5; --i; return i; } => 4
+  [test #145: 13.0 ms]
+int main() { int i; i=5; return --i*2; } => 8
+  [test #146: 9.0 ms]
+int main() { int i; int a; i=5; a=--i; return a+i; } => 8
+  [test #147: 13.2 ms]
+int main() { int i; i=5; --i; --i; --i; return i; } => 2
+  [test #148: 9.0 ms]
+int main() { int i; i=5; return i--; } => 5
+  [test #149: 8.6 ms]
+int main() { int i; i=5; i--; return i; } => 4
+  [test #150: 10.6 ms]
+int main() { int i; i=5; return i--*2; } => 10
+  [test #151: 9.9 ms]
+int main() { int i; int a; i=5; a=i--; return a+i; } => 9
+  [test #152: 8.8 ms]
+int main() { int i; int a; i=5; a=i--*2; return a+i; } => 14
+  [test #153: 9.1 ms]
+int main() { int i; i=5; i--; i--; i--; return i; } => 2
+  [test #154: 13.9 ms]
+int main() { int i; i=5; i++; i--; return i; } => 5
+  [test #155: 8.9 ms]
+int main() { int i; i=5; ++i; --i; return i; } => 5
+  [test #156: 9.5 ms]
+int main() { int i; i=5; ++i; i--; i++; return i; } => 6
+  [test #157: 8.8 ms]
+int main() { int i; int a; int b; i=5; a=i++; b=++i; return a+b-2; } => 10
+  [test #158: 10.7 ms]
+int main() { int i; i=0; i++; i--; return i; } => 0
+  [test #159: 10.8 ms]
+int main() { int i; for(i=0;i<5;i++) {} return i; } => 5
+  [test #160: 13.7 ms]
+int main() { int i; for(i=0;i<10;++i) {} return i; } => 10
+  [test #161: 9.1 ms]
+int main() { int a; int i; a=0; for(i=0;i<10;i++) a++; return a; } => 10
+  [test #162: 13.1 ms]
+int main() { int sum; int i; sum=0; for(i=0;i<10;i++) {sum=sum+i;} return sum; } => 45
+  [test #163: 11.2 ms]
+int main() { int sum; int i; sum=0; for(i=1;i<=10;i++) {sum=sum+i;} return sum; } => 55
+  [test #164: 9.1 ms]
+int main() { int i; for(i=10;i>0;i--) {} return i; } => 0
+  [test #165: 9.6 ms]
+int main() { int i; for(i=10;i>0;--i) {} return i; } => 0
+  [test #166: 11.8 ms]
+int main() { int sum; int i; sum=0; for(i=10;i>0;i--) {sum=sum+i;} return sum; } => 55
+  [test #167: 9.0 ms]
+int main() { int i; for(i=10;i>5;i--) {} return i; } => 5
+  [test #168: 9.4 ms]
+int main() { int i; i=0; for(;i<5;i++) {} return i; } => 5
+  [test #169: 9.4 ms]
+int main() { int i; i=0; for(;i<5;) i++; return i; } => 5
+  [test #170: 10.1 ms]
+int main() { int i; i=0; for(;;) {if(i==5) return i; i++;} } => 5
+  [test #171: 9.6 ms]
+int main() { for(;;) return 42; } => 42
+  [test #172: 9.5 ms]
+int main() { int i; for(i=0;i<0;i++) {} return i; } => 0
+  [test #173: 10.0 ms]
+int main() { int sum; int i; int j; sum=0; for(i=0;i<3;i++) {for(j=0;j<3;j++) sum++;} return sum; } => 9
+  [test #174: 10.2 ms]
+int main() { int sum; int i; int j; sum=0; for(i=0;i<5;i++) {for(j=0;j<5;j++) sum++;} return sum; } => 25
+  [test #175: 9.9 ms]
+int main() { int sum; int i; int j; sum=0; for(i=0;i<10;i++) {for(j=0;j<10;j++) sum++;} return sum; } => 100
+  [test #176: 9.7 ms]
+int main() { int i; for(i=0;i<10;i++) {if(i==5) return i;} return 0; } => 5
+  [test #177: 13.6 ms]
+int main() { int i; for(i=0;i<10;i++) {if(i==7) return i;} return 0; } => 7
+  [test #178: 10.8 ms]
+int main() { int a; int i; a=0; for(i=0;i<10;i++) {if(i<5) a++; else a++;} return a; } => 10
+  [test #179: 13.8 ms]
+int main() { int i; int j; i=0; for(j=0;j<100;j++) {i++;} return i; } => 100
+  [test #180: 9.9 ms]
+int main() { int i; int j; i=0; for(j=0;j<200;j++) {++i;} return i; } => 200
+  [test #181: 8.8 ms]
+int main() { int i; int j; i=100; for(j=0;j<50;j++) {i--;} return i; } => 50
+  [test #182: 9.8 ms]
+int main() { int i; int j; i=0; for(j=0;j<42;j++) {i=i+1;} return i; } => 42
+  [test #183: 13.1 ms]
+int main() { int i; for(i=0;i<10;i++) {if(i==5) break;} return i; } => 5
+  [test #184: 13.8 ms]
+int main() { int i; i=0; while(i<10) {if(i==3) break; i++;} return i; } => 3
+  [test #185: 9.6 ms]
+int main() { int i; int sum; i=0; sum=0; while(i<5) {i++; if(i<5) continue; sum=sum+i;} return sum; } => 5
+  [test #186: 10.0 ms]
+int main() { int sum; int i; sum=0; for(i=0;i<10;i++) {if(i<5) continue; sum++;} return sum; } => 5
+  [test #187: 9.3 ms]
+int answer() { return 42; } int main() { return answer(); } => 42
+  [test #188: 9.8 ms]
+int main() { return answer(); } int answer() { return 42; } => 42
+  [test #189: 9.0 ms]
+int six() { return 6; } int seven() { return 7; } int main() { return six()*seven(); } => 42
+  [test #190: 10.3 ms]
+int answer() { return 42; } int main() { return 5+answer(); } => 47
+  [test #191: 9.5 ms]
+int answer() { return 42; } int main() { return answer()+5; } => 47
+  [test #192: 11.6 ms]
+int answer() { return 42; } int main() { return answer()+answer(); } => 84
+  [test #193: 14.1 ms]
+int leaf() { return 42; } int middle() { return leaf(); } int main() { return middle(); } => 42
+  [test #194: 10.0 ms]
+int helper() { int a; a=7; return a; } int main() { int a; int b; a=5; b=helper(); return a+b; } => 12
+  [test #195: 9.9 ms]
+int helper() { int a; a=99; return a; } int main() { int a; a=5; helper(); return a; } => 5
+  [test #196: 9.2 ms]
+int one() { return 1; } int main() { int sum; int i; sum=0; for(i=0;i<10;i++) sum=sum+one(); return sum; } => 10
+  [test #197: 13.1 ms]
+int first() { if(1) return 1; return 0; } int second() { if(1) return 2; return 0; } int main() { return first()+second(); } => 3
+  [test #198: 11.9 ms]
+int main() {} => 0
+  [test #199: 13.1 ms]
+int helper() {} int main() { return helper(); } => 0
+  [test #200: 10.4 ms]
+Rejected as expected: int helper() { return 42; }
+  [test #201: 0.9 ms]
+Rejected as expected: 
+  [test #202: 0.9 ms]
+int identity(int a) { return a; } int main() { return identity(42); }
+                  ^ Expected a type
+FAIL: compilation failed
+Source: int identity(int a) { return a; } int main() { return identity(42); }
+  [test #203: 0.4 ms]
+int subtract(int a, int b) { return a-b; } int main() { return subtract(10,3); }
+                  ^ Expected a type
+FAIL: compilation failed
+Source: int subtract(int a, int b) { return a-b; } int main() { return subtract(10,3); }
+  [test #204: 0.4 ms]
+int multiply(int a, int b) { return a*b; } int main() { return multiply(1+2,10-3); }
+                  ^ Expected a type
+FAIL: compilation failed
+Source: int multiply(int a, int b) { return a*b; } int main() { return multiply(1+2,10-3); }
+  [test #205: 0.6 ms]
+int add(int a, int b) { return a+b; } int main() { int x; int y; x=5; y=10; return add(x,y); }
+             ^ Expected a type
+FAIL: compilation failed
+Source: int add(int a, int b) { return a+b; } int main() { int x; int y; x=5; y=10; return add(x,y); }
+  [test #206: 0.5 ms]
+int six(int a, int b, int c, int d, int e, int f) { return a-b-c-d-e-f; } int main() { return six(63,1,2,4,5,8); }
+             ^ Expected a type
+FAIL: compilation failed
+Source: int six(int a, int b, int c, int d, int e, int f) { return a-b-c-d-e-f; } int main() { return six(63,1,2,4,5,8); }
+  [test #207: 0.6 ms]
+int identity(int a) { return a; } int add(int a, int b) { return a+b; } int main() { return add(identity(20),identity(22)); }
+                  ^ Expected a type
+FAIL: compilation failed
+Source: int identity(int a) { return a; } int add(int a, int b) { return a+b; } int main() { return add(identity(20),identity(22)); }
+  [test #208: 0.5 ms]
+int add(int a, int b) { return a+b; } int main() { return 5+add(20,22); }
+             ^ Expected a type
+FAIL: compilation failed
+Source: int add(int a, int b) { return a+b; } int main() { return 5+add(20,22); }
+  [test #209: 0.6 ms]
+int change(int a) { a=99; return a; } int main() { int a=5; change(a); return a; }
+                ^ Expected a type
+FAIL: compilation failed
+Source: int change(int a) { a=99; return a; } int main() { int a=5; change(a); return a; }
+  [test #210: 0.5 ms]
+int factorial(int n) { if(n<=1) return 1; return n*factorial(n-1); } int main() { return factorial(5); }
+                   ^ Expected a type
+FAIL: compilation failed
+Source: int factorial(int n) { if(n<=1) return 1; return n*factorial(n-1); } int main() { return factorial(5); }
+  [test #211: 0.5 ms]
+int main() { int a=5; return a; } => 5
+  [test #212: 13.5 ms]
+int main() { int a; a=10; return a; } => 10
+  [test #213: 9.9 ms]
+int main() { int a=5; int b=10; return a+b; } => 15
+  [test #214: 10.1 ms]
+int main() { int a=5; int b=a+2; return b; } => 7
+  [test #215: 9.5 ms]
+int main() { int a=5; a=10; return a; } => 10
+  [test #216: 9.6 ms]
+int main() { int a=5; return ++a; } => 6
+  [test #217: 9.4 ms]
+int increment(int a) { int b=a+1; return b; } int main() { return increment(5); }
+                   ^ Expected a type
+FAIL: compilation failed
+Source: int increment(int a) { int b=a+1; return b; } int main() { return increment(5); }
+  [test #218: 0.5 ms]
+Rejected as expected: int main() { a=5; return a; }
+  [test #219: 1.1 ms]
+Rejected as expected: int main() { return missing; }
+  [test #220: 1.1 ms]
+Rejected as expected: int main() { int a; int a; return 0; }
+  [test #221: 1.0 ms]
+Expected ';'
+FAIL: compilation failed
+Source: int main() { int main() { u8 x = 255; return x; } }
+  [test #222: 0.5 ms]
+Expected ';'
+FAIL: compilation failed
+Source: int main() { int main() { u8 x = 257; return x; } }
+  [test #223: 0.5 ms]
+Expected ';'
+FAIL: compilation failed
+Source: int main() { int main() { u8 x = 255; return x+2; } }
+  [test #224: 0.5 ms]
+Expected ';'
+FAIL: compilation failed
+Source: int main() { int main() { u8 x = 255; ++x; return x; } }
+  [test #225: 0.5 ms]
+Expected ';'
+FAIL: compilation failed
+Source: int main() { int main() { u8 x = 255; int old=x++; return old+x; } }
+  [test #226: 0.5 ms]
+Expected ';'
+FAIL: compilation failed
+Source: int main() { int main() { u8 x = 0; --x; return x; } }
+  [test #227: 0.5 ms]
+Expected ';'
+FAIL: compilation failed
+Source: int main() { int main() { u8 x = 0; int old=x--; return old; } }
+  [test #228: 0.6 ms]
+Expected ';'
+FAIL: compilation failed
+Source: int main() { int main() { int a=42; u8 b=1; return a+b; } }
+  [test #229: 0.5 ms]
+Expected ';'
+FAIL: compilation failed
+Source: int main() { int main() { u8 b=1; int a=42; return a+b; } }
+  [test #230: 0.5 ms]
+Expected ';'
+FAIL: compilation failed
+Source: int main() { int get(u8 x) { return x; } int main() { return get(257); } }
+  [test #231: 0.5 ms]
+
+--- Timing ---
+Wall time:      268.2 ms
+Sum of tests:   2322.3 ms (avg 10.0 ms/test)
+Throughput:     861.2 tests/sec
+Parallelism:    8.6x effective (28 jobs)
+Slowest 5:
+      16.7 ms  int main() { return 50+50; }
+      16.5 ms  int main() { return 42; }
+      16.2 ms  int main() { return 2+3*4; }
+      16.0 ms  int main() { return (2+3)*4; }
+      16.0 ms  int main() { return 10/2; }

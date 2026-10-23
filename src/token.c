@@ -11,6 +11,26 @@ void advance_tokenizer() {
   global_token = global_token->next_token;
 }
 
+static const char *operators[] = {
+    "==", "!=", "<=", ">=",
+    "++", "--",
+    "+", "-", "*", "/",
+    "(", ")", "<", ">",
+    "=", ";", "{", "}", ",",
+};
+
+static const Keyword keywords[] = {
+  {"int",      TOKEN_INT},
+  {"u8",       TOKEN_U8},
+  {"if",       TOKEN_IF},
+  {"else",     TOKEN_ELSE},
+  {"while",    TOKEN_WHILE},
+  {"for",      TOKEN_FOR},
+  {"return",   TOKEN_RETURN},
+  {"break",    TOKEN_BREAK},
+  {"continue", TOKEN_CONTINUE},
+};
+
 // if next token is the expected symbol advance and return true
 // if not return false
 bool consume(char *op) {

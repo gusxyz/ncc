@@ -1,14 +1,53 @@
+#include "type.h"
 #include <codegen.h>
 #include <error.h>
 #include <emit.h>
+#include <string.h>
 
 static const char *argument_registers[] = {
-  "rdi", "rsi", "rdx", "rcx", "r8", "r9",
+//64bit registers
+"rdi", "rsi", "rdx", "rcx", "r8", "r9",
 };
+
+static const char *byte_argument_register[] = {
+// byte sized registers
+"dil", "sil", "dl", "cl", "r8b", "r9b"
+};
+
+
+char *get_type_size(Type *type) {
+  char *size;
+
+  if(type->kind == TYPE_U8)
+    size = "BYTE";
+  else
+    size = "QWORD";
+
+  return size;
+
+}
+char *get_type_reg(Type *type) {
+  char *reg;
+
+  if(type->kind == TYPE_U8)
+    reg = "dil";
+  else
+    reg = "rdi";
+
+  return reg;
+}
+
+static void load_local_value(Type *type, const char *reg) {
+  if (type->kind == TYPE_U8)
+    emit("movzx %s, BYTE PTR [rax]", reg);
+  else
+    emit("mov %s, QWORD PTR [rax]", reg);
+}
 
 void generate_local_variable(Node* node) {
   if(node->kind != NODE_LOCAL_VARIABLE)
     error("Left-hand side of assignemnt is not a variable");
+  
   emit("mov rax, rbp");
   emit("sub rax, %d", node->offset);
   emit("push rax");
@@ -17,47 +56,54 @@ void generate_local_variable(Node* node) {
 void generate_assign(Node *node) {
     generate_local_variable(node->left_hand_side);
     generate_expression(node->right_hand_side);
+    Type *type = node->left_hand_side->type;
 
     emit("pop rdi");
     emit("pop rax");
-    emit("mov [rax], rdi");
+    emit("mov %s PTR [rax], %s", get_type_size(type), get_type_reg(type));
+    if (type->kind == TYPE_U8)
+      emit("movzx edi, dil");
     emit("push rdi");
 }
 
 void generate_pre_increment(Node *node) {
-  generate_local_variable(node->left_hand_side);
-  
+  Node *var = node->left_hand_side;
+  generate_local_variable(var);
   emit("pop rax");
-  emit("add QWORD PTR [rax], 1");
-  emit("mov rax, [rax]");
+  
+  emit("add %s PTR [rax], 1", get_type_size(var->type));
+  load_local_value(var->type, "rax");
   emit("push rax");
 }
 
 void generate_post_increment(Node *node) {
-    generate_local_variable(node->left_hand_side);
+  Node *var = node->left_hand_side;
+  generate_local_variable(var);
 
-    emit("pop rax");
-    emit("mov rdi, [rax]");
-    emit("push rdi");
-    emit("add QWORD PTR [rax], 1");
+  emit("pop rax");
+  load_local_value(var->type, "rdi");
+  emit("push rdi");
+  emit("add %s PTR [rax], 1", get_type_size(var->type));
 }
 
 void generate_pre_decrement(Node *node) {
-  generate_local_variable(node->left_hand_side);
+  Node *var = node->left_hand_side;
+  generate_local_variable(var);
   
   emit("pop rax");
-  emit("sub QWORD PTR [rax], 1");
-  emit("mov rax, [rax]");
+  emit("sub %s PTR [rax], 1", get_type_size(var->type));
+  load_local_value(var->type, "rax");
   emit("push rax");
 }
 
 void generate_post_decrement(Node *node) {
-    generate_local_variable(node->left_hand_side);
-
+    Node *var = node->left_hand_side;
+    generate_local_variable(var);
     emit("pop rax");
-    emit("mov rdi, [rax]");
+
+    load_local_value(var->type, "rdi");
     emit("push rdi");
-    emit("sub QWORD PTR [rax], 1");
+    emit("sub %s PTR [rax], 1", get_type_size(var->type));
 }
 
 static int next_label_id;
@@ -92,11 +138,17 @@ void generate_function(Function *function) {
     emit_label("%s", function->name);
     allocate_prologue(function->stack_size);
 
-    for(size_t i = 0; i < function->arguments.count; i++) {
-      LocalVariable *argument = function->arguments.items[i];
-      emit("mov [rbp-%d], %s",
-          argument->offset,
-          argument_registers[i]);
+    for(size_t i = 0; i < function->paramaters.count; i++) {
+      LocalVariable *paramater = function->paramaters.items[i];
+      if(paramater->type->kind == TYPE_U8) {
+        emit("mov BYTE PTR [rbp-%d], %s",
+          paramater->offset,
+          byte_argument_register[i]);
+      } else {
+        emit("mov QWORD PTR [rbp-%d], %s",
+            paramater->offset,
+            argument_registers[i]);
+      }
     }
 
     generate_statement(function->body);
@@ -122,6 +174,7 @@ void generate_expression(Node *node) {
 
     for (int i = 0; i < count; i++)
       generate_expression(node->arguments.items[i]);
+
     for(int i = count; i > 0; i--) {
       emit("pop %s", argument_registers[i -1]);
     }
@@ -140,7 +193,10 @@ void generate_expression(Node *node) {
   case NODE_LOCAL_VARIABLE:
     generate_local_variable(node);
     emit("pop rax");
-    emit("mov rax, [rax]");
+    if (node->type->kind == TYPE_U8)
+      emit("movzx rax, BYTE PTR [rax]");
+    else
+      emit("mov rax, QWORD PTR [rax]");
     emit("push rax");
     return;
   case NODE_ASSIGN:

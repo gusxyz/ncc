@@ -7,7 +7,14 @@ static Type integer_type = {
     .alignment = 8,
 };
 
+static Type u8integer_type = {
+    .kind = TYPE_U8,
+    .size = 1,
+    .alignment = 1,
+};
+
 Type *type_int = &integer_type;
+Type *type_u8 = &u8integer_type;
 
 Type *pointer_to(Type *base) {
     Type *type = calloc(1,sizeof(Type));

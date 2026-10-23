@@ -35,26 +35,6 @@ typedef struct {
   TokenKind kind;
 } Keyword;
 
-static const char *operators[] = {
-    "==", "!=", "<=", ">=",
-    "++", "--",
-    "+", "-", "*", "/",
-    "(", ")", "<", ">",
-    "=", ";", "{", "}", ",",
-};
-
-static const Keyword keywords[] = {
-  {"int",      TOKEN_INT},
-  {"u8",       TOKEN_U8},
-  {"if",       TOKEN_IF},
-  {"else",     TOKEN_ELSE},
-  {"while",    TOKEN_WHILE},
-  {"for",      TOKEN_FOR},
-  {"return",   TOKEN_RETURN},
-  {"break",    TOKEN_BREAK},
-  {"continue", TOKEN_CONTINUE},
-};
-
 extern Token *global_token;
 
 bool consume(char *op);
