@@ -18,6 +18,9 @@ typedef enum {
   TOKEN_CONTINUE,
   TOKEN_INT,
   TOKEN_U8,
+  TOKEN_CHAR,
+  TOKEN_CHAR_LITERAL,
+  TOKEN_STRING_LITERAL,
 } TokenKind;
 
 typedef struct Token Token;

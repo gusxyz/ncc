@@ -21,6 +21,7 @@ static const char *operators[] = {
 
 static const Keyword keywords[] = {
   {"int",      TOKEN_INT},
+  {"char",     TOKEN_CHAR},
   {"u8",       TOKEN_U8},
   {"if",       TOKEN_IF},
   {"else",     TOKEN_ELSE},
@@ -148,6 +149,50 @@ Token *tokenize(char *current_char){
       continue;
     }
 
+    if (*current_char == '"') {
+      char *start = current_char + 1;
+      current_char++;
+
+      while (*current_char && *current_char != '"') {
+        if (*current_char == '\\')
+          error("String escapes aren't supported yet");
+        if (*current_char == '\n')
+          error("Newline inside string literal");
+
+        current_char++;
+      }
+
+      if (!*current_char)
+        error("Unterminated string literal");
+
+      Token *token = token_new(TOKEN_STRING_LITERAL, current_token, start);
+      token->length = current_char - start;
+
+      current_token = token;
+      current_char++;
+      continue;
+    }
+
+    if (*current_char == '\'') {
+      char *start = current_char;
+      char *value = current_char + 1;
+
+      if (!value[0] || value[1] != '\'')
+        error("Expected one character between single quotes");
+
+      // Escapes such as '\n' aren't supported yet.
+      if (value[0] == '\\')
+        error("Character escapes aren't supported yet");
+
+      Token *token = token_new(TOKEN_CHAR_LITERAL, current_token, start);
+      token->value = (unsigned char)value[0];
+      token->length = 3;
+
+      current_token = token;
+      current_char = value + 2;
+      continue;
+    }
+    
     error("Cannot tokenize input.");
   }
 

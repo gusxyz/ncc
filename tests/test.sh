@@ -529,4 +529,9 @@ assert 7 'int x=1; int y=7; int *p; p=&x; p=&y; return *p;'
 # Pointers to u8
 assert 255 'u8 x=255; u8 *p; p=&x; return *p;'
 assert 9 'u8 x=1; u8 *p; p=&x; *p=9; return x;'
+
+# Char literals
+assert 65 "return 'A';"
+assert 65 "char c='A'; return c;"
+
 finish || exit 1

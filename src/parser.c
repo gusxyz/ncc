@@ -34,7 +34,8 @@ bool consume_kind(TokenKind kind) {
 
 bool is_type_start() {
   if(global_token->kind == TOKEN_INT ||
-    global_token->kind == TOKEN_U8)
+    global_token->kind == TOKEN_U8 ||
+    global_token->kind == TOKEN_CHAR)
     return true;
 
   return false;
@@ -46,6 +47,8 @@ Type *parse_type() {
   if (consume_kind(TOKEN_INT))
     type = type_int;
   else if (consume_kind(TOKEN_U8))
+    type = type_u8;
+  else if (consume_kind(TOKEN_CHAR))
     type = type_u8;
   else
     error_at(global_token->string, "Expected a type");
@@ -368,8 +371,16 @@ Node *primary() {
         return node;
     }
 
-    Token *identifier_token = consume_identifier();
+    if(global_token->kind == TOKEN_CHAR_LITERAL) {
+        int value = global_token->value;
+        advance_tokenizer();
 
+        Node* node = new_node_number(value);
+        node->type = type_int;
+        return node;
+    }
+
+    Token *identifier_token = consume_identifier();
     if (identifier_token) {
       // its a function  
       if(consume("(")) {
