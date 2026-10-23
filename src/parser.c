@@ -1,3 +1,4 @@
+#include "type.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -29,6 +30,21 @@ bool consume_kind(TokenKind kind) {
     return false;
   advance_tokenizer();
   return true;
+}
+
+bool is_type_start() {
+  if(global_token->kind == TOKEN_INT)
+    return true;
+
+  return false;
+}
+
+Type *parse_type() {
+  if(consume_kind(TOKEN_INT))
+    return type_int;
+  
+  error_at(global_token->string, "Expected a type");
+  return NULL;
 }
 
 LocalVariable *find_lvar(Token* token) {
@@ -168,7 +184,7 @@ Node *parse_for() {
     return node;
 }
 
-Node *parse_decleration() { 
+Node *parse_decleration(Type *type) { 
   Token *name = consume_identifier();
   
   if(!name)
@@ -177,7 +193,7 @@ Node *parse_decleration() {
   if(find_lvar(name))
     error_at(global_token->string, "Variable already declared");
 
-  LocalVariable *variable = new_local_variable(name, type_int);
+  LocalVariable *variable = new_local_variable(name, type);
 
   Node *block = new_node(NODE_BLOCK, NULL, NULL);
   
@@ -195,9 +211,9 @@ Node *parse_decleration() {
 
 Node *statement() {
   Node *node;
-  
-  if (consume_kind(TOKEN_INT))
-    return parse_decleration();
+
+  if(is_type_start())
+    return parse_decleration(parse_type());
   if (consume_kind(TOKEN_IF))
     return parse_if();
   if (consume_kind(TOKEN_WHILE))

@@ -44,24 +44,25 @@ typedef struct {
 
 struct Node {
   NodeKind kind;
-
   Node *left_hand_side;
   Node *right_hand_side;
 
   Node *condition;
   Node *then;
   Node *els;
-
   Node *init;
   Node *inc;
 
-  NodeArray body;
+  char *function_name;
   NodeArray arguments;
+  
+  NodeArray body;
+
   Type* type;
+  Token *token;
 
   int value;
   int offset;
-  char *function_name;
 };
 
 typedef struct LocalVariable LocalVariable;
@@ -107,7 +108,7 @@ LocalVariable *new_local_variable(Token *token, Type *type);
 // Grammar
 Program *parse_program();
 Node *parse_block();
-Node *parse_decleration();
+Node *parse_decleration(Type *type);
 Node *statement();
 Node *expression();
 Node *assign();
