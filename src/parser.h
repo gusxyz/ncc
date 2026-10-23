@@ -23,6 +23,12 @@ typedef enum {
   NODE_FOR,
   NODE_BLOCK,
   NODE_EXPR_STMT,
+  NODE_PRE_INCREMENT,
+  NODE_POST_INCREMENT,
+  NODE_PRE_DECREMENT,
+  NODE_POST_DECREMENT,
+  NODE_BREAK,
+  NODE_CONTINUE,
 } NodeKind;
 
 typedef struct Node Node;
@@ -57,7 +63,7 @@ typedef struct LocalVariable LocalVariable;
 struct LocalVariable {
   LocalVariable *next;
   char *name;
-  int length;
+  size_t length;
   int offset;
 };
 
@@ -79,6 +85,7 @@ Node *relational();
 Node *add();
 Node *multiply();
 Node *unary();
+Node *postfix();
 Node *primary();
 
 #endif

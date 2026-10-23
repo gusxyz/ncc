@@ -61,9 +61,8 @@ Token *token_new(TokenKind kind, Token *current_token, char* string) {
 }
 
 static int operator_length(const char* op) {
-  for(int i = 0; i < sizeof(operators) / sizeof(*operators); i++) {
+  for(size_t i = 0; i < sizeof(operators) / sizeof(*operators); i++) {
     int length = strlen(operators[i]);
-
     if (strncmp(op, operators[i], length) == 0)
       return length;
   }
@@ -115,6 +114,12 @@ Token *tokenize(char *current_char){
         kind = TOKEN_RETURN;
       else if (length == 5 && strncmp(start, "while", 5) == 0)
         kind = TOKEN_WHILE;
+      else if (length == 3 && strncmp(start, "for", 3) == 0)
+        kind = TOKEN_FOR;
+      else if (length == 5 && strncmp(start, "break", 5) == 0)
+        kind = TOKEN_BREAK;
+      else if (length == 8 && strncmp(start, "continue", 8) == 0)
+        kind = TOKEN_CONTINUE;
 
       current_token = token_new(kind, current_token, start);
       current_token->length = length;

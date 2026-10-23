@@ -60,14 +60,58 @@ Node *parse_while() {
   return node;
 }
 
+Node *parse_block() {
+  Node *node = new_node(NODE_BLOCK, NULL, NULL);
+  expect('{');
+
+  while (!consume("}")) {
+    if (at_eof())
+      error("Expected '}' before end of input");
+    da_append(&node->body, statement());
+  }
+
+  return node;
+}
+
+Node *parse_for() {
+    Node *node = new_node(NODE_FOR, NULL, NULL);
+    expect('(');
+    if (!consume(";")) {
+        node->init = expression();
+        expect(';');
+    }
+    if (!consume(";")) {
+        node->condition = expression();
+        expect(';');
+    }
+    if (!consume(")")) {
+        node->inc = expression();
+        expect(')');
+    }
+    node->then = statement();
+    return node;
+}
+
 Node *statement() {
   Node *node;
 
   if (consume_kind(TOKEN_IF))
     return parse_if();
-
   if (consume_kind(TOKEN_WHILE))
     return parse_while();
+  if (consume_kind(TOKEN_FOR))
+    return parse_for();
+  if (consume_kind(TOKEN_BREAK)) {
+    expect(';');
+    return new_node(NODE_BREAK, NULL, NULL);
+  }
+  if (consume_kind(TOKEN_CONTINUE)) {
+    expect(';');
+    return new_node(NODE_CONTINUE, NULL, NULL);
+  }
+
+  if (global_token->kind == TOKEN_RESERVED && global_token->string[0] == '{')
+    return parse_block();
 
   if (consume_kind(TOKEN_RETURN)) {
     node = calloc(1, sizeof(Node));
@@ -147,9 +191,25 @@ Node *multiply() {
 Node *unary() {
   if (consume("+"))
     return unary();
-  else if (consume("-"))
+  if (consume("-"))
     return new_node(NODE_SUBTRACT, new_node_number(0), unary());
-  return primary();
+  if (consume("++"))
+    return new_node(NODE_PRE_INCREMENT, unary(), NULL);
+  if (consume("--"))
+    return new_node(NODE_PRE_DECREMENT, unary(), NULL);
+  return postfix();
+}
+
+Node *postfix() {
+    Node *node = primary();
+    for(;;) {  
+      if(consume("++"))
+        node = new_node(NODE_POST_INCREMENT, node, NULL);
+      else if(consume("--"))
+        node = new_node(NODE_POST_DECREMENT, node, NULL);
+      else
+        return node;
+    }
 }
 
 LocalVariable *locals;

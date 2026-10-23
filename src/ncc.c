@@ -14,17 +14,17 @@ void print_header() {
 void allocate_prologue() {
   // Function prologue
   // Allocate space for 26 variables
-  printf("  push rbp\n");
-  printf("  mov rbp, rsp\n");
-  printf("  sub rsp, 208\n");
+  emit("push rbp");
+  emit("mov rbp, rsp");
+  emit("sub rsp, 208");
 }
 
 void epilogue() {
   // Function epilogue
   // Leave's last functions result in rax
-  printf("  mov rsp, rbp\n");
-  printf("  pop rbp\n");
-  printf("  ret\n");
+  emit("mov rsp, rbp");
+  emit("pop rbp");
+  emit("ret");
 }
 
 int main(int argc, char**argv) {

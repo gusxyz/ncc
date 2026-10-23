@@ -14,6 +14,9 @@ typedef enum {
   TOKEN_IF,
   TOKEN_ELSE,
   TOKEN_WHILE,
+  TOKEN_FOR,
+  TOKEN_BREAK,
+  TOKEN_CONTINUE,
 } TokenKind;
 
 typedef struct Token Token;
@@ -28,6 +31,7 @@ struct Token {
 
 static const char *operators[] = {
     "==", "!=", "<=", ">=",
+    "++", "--",
     "+", "-", "*", "/",
     "(", ")", "<", ">",
     "=", ";", "{", "}"

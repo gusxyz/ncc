@@ -20,7 +20,46 @@ void generate_assign(Node *node) {
     emit("push rdi");
 }
 
+void generate_pre_increment(Node *node) {
+  generate_local_variable(node->left_hand_side);
+  
+  emit("pop rax");
+  emit("add QWORD PTR [rax], 1");
+  emit("mov rax, [rax]");
+  emit("push rax");
+}
+
+void generate_post_increment(Node *node) {
+    generate_local_variable(node->left_hand_side);
+
+    emit("pop rax");
+    emit("mov rdi, [rax]");
+    emit("push rdi");
+    emit("add QWORD PTR [rax], 1");
+}
+
+void generate_pre_decrement(Node *node) {
+  generate_local_variable(node->left_hand_side);
+  
+  emit("pop rax");
+  emit("sub QWORD PTR [rax], 1");
+  emit("mov rax, [rax]");
+  emit("push rax");
+}
+
+void generate_post_decrement(Node *node) {
+    generate_local_variable(node->left_hand_side);
+
+    emit("pop rax");
+    emit("mov rdi, [rax]");
+    emit("push rdi");
+    emit("sub QWORD PTR [rax], 1");
+}
+
 static int next_label_id;
+static int break_label = -1;
+static int continue_label = -1;
+
 int new_label() { return next_label_id++; }
 
 void generate_expression(Node *node) {
@@ -36,6 +75,18 @@ void generate_expression(Node *node) {
     return;
   case NODE_ASSIGN:
     generate_assign(node);
+    return;
+  case NODE_POST_INCREMENT:
+    generate_post_increment(node);
+    return;
+  case NODE_PRE_INCREMENT:
+    generate_pre_increment(node);
+    return;
+  case NODE_POST_DECREMENT:
+    generate_post_decrement(node);
+    return;
+  case NODE_PRE_DECREMENT:
+    generate_pre_decrement(node);
     return;
   default:
     break;
@@ -85,6 +136,7 @@ void generate_expression(Node *node) {
   default:
     error("Invalid expression node kind %d", node->kind);
   }
+  
   emit("push rax");
 }
 
@@ -123,15 +175,71 @@ void generate_if(Node *node) {
 
 void generate_while(Node *node) {
   int id = new_label();
-  
-  emit_label(".L.while.%d", id);
+  int savedbreak = break_label;
+  int savedcont = continue_label;
+  break_label = id;
+  continue_label = id;
+  emit_label(".L.continue.%d", id);
   generate_expression(node->condition);
   emit("pop rax");
   emit("cmp rax, 0");
   emit("je .L.end.%d", id);
   generate_statement(node->then);
-  emit("jmp .L.while.%d", id);
+  emit("jmp .L.continue.%d", id);
   emit_label(".L.end.%d", id);
+  break_label = savedbreak;
+  continue_label = savedcont;
+}
+
+void generate_break() {
+  if(break_label == -1)
+    error("break outside of a loop");
+
+  emit("jmp .L.end.%d", break_label);
+}
+
+void generate_continue() {
+  if(continue_label == -1)
+    error("continue outside of a loop");
+
+  emit("jmp .L.continue.%d", continue_label);
+}
+
+void generate_for(Node *node) {
+  int id = new_label();
+  int savedbreak = break_label;
+  int savedcont = continue_label;
+  break_label = id;
+  continue_label = id;
+  if(node->init) {
+    generate_expression(node->init);
+    emit("pop rax");
+  }
+  emit_label(".L.loop.%d", id);
+  if(node->condition) {
+    generate_expression(node->condition);
+    emit("pop rax");
+    emit("cmp rax, 0");
+    emit("je .L.end.%d", id);
+  }
+  generate_statement(node->then);
+
+  emit_label(".L.continue.%d", id);
+
+  if(node->inc) {
+    generate_expression(node->inc);
+    emit("pop rax");
+  }
+  emit("jmp .L.loop.%d", id);
+  emit_label(".L.end.%d", id);
+  break_label = savedbreak;
+  continue_label = savedcont;
+}
+
+void generate_block(Node *node) {
+  for (size_t i = 0; i < node->body.count; i++) {
+    generate_statement(node->body.items[i]);
+  }
 }
 
 void generate_statement(Node *node) {
@@ -142,6 +250,14 @@ void generate_statement(Node *node) {
     return generate_while(node);
   if(node->kind == NODE_IF)
     return generate_if(node);
+  if (node->kind == NODE_BLOCK)
+    return generate_block(node);
+  if (node->kind == NODE_FOR)
+    return generate_for(node);
+  if (node->kind == NODE_BREAK)
+    return generate_break();
+  if (node->kind == NODE_CONTINUE)
+    return generate_continue();
 
   generate_expression(node);
   emit("pop rax");
