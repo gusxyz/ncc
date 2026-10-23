@@ -3,6 +3,7 @@
 
 #include <token.h>
 #include <stddef.h>
+#include <type.h>
 
 typedef enum {
   NODE_ADD,
@@ -56,6 +57,7 @@ struct Node {
 
   NodeArray body;
   NodeArray arguments;
+  Type* type;
 
   int value;
   int offset;
@@ -69,6 +71,7 @@ struct LocalVariable {
   char *name;
   size_t length;
   int offset;
+  Type* type;
 };
 
 typedef struct {
@@ -82,6 +85,7 @@ typedef struct {
   Node *body;
   ArgumentArray arguments;
   int stack_size;
+  Type *return_type;
 } Function;
 
 typedef struct {
@@ -98,7 +102,7 @@ typedef struct {
 Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side);
 Node *new_node_number(int value);
 LocalVariable *find_lvar(Token *token);
-LocalVariable *new_local_variable(Token *token);
+LocalVariable *new_local_variable(Token *token, Type *type);
 
 // Grammar
 Program *parse_program();

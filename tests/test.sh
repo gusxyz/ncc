@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Run from the project root. Requires Bash 5.1+ for wait -n -p.

@@ -20,6 +20,7 @@ Node *new_node_number(int value) {
   Node *node = calloc(1, sizeof(Node));
   node->kind = NODE_NUMBER;
   node->value = value;
+  node->type = type_int;
   return node;
 }
 
@@ -37,11 +38,13 @@ LocalVariable *find_lvar(Token* token) {
   return NULL;
 }
 
-LocalVariable *new_local_variable(Token *token) {
+LocalVariable *new_local_variable(Token *token, Type *type) {
     LocalVariable *local_var = calloc(1, sizeof(LocalVariable));
 
     local_var->name = token->string;
     local_var->length = token->length;
+    local_var->type = type;
+
     local_var->offset = locals ? locals->offset + 8 : 8;
 
     local_var->next = locals;
@@ -54,6 +57,7 @@ Node *new_node_local_variable(LocalVariable *local_var) {
     Node *node = calloc(1, sizeof(*node));
     node->kind = NODE_LOCAL_VARIABLE;
     node->offset = local_var->offset;
+    node->type = local_var->type;
     return node;
 }
 
@@ -66,6 +70,7 @@ Function *parse_function() {
     error_at(global_token->string, "Expected a function name");
 
   Function *function = calloc(1, sizeof(Function));
+  function->return_type = type_int; // actually will fetch type later
 
   function->name = calloc(name->length + 1, sizeof(char));
   memcpy(function->name, name->string, name->length);
@@ -85,7 +90,7 @@ Function *parse_function() {
       if(function->arguments.count >= 6)
         error_at(param_name->string, "At most 6 paramaters allowed");
 
-      LocalVariable *argument = new_local_variable(param_name);
+      LocalVariable *argument = new_local_variable(param_name, type_int);
       da_append(&function->arguments, argument);
     } while(consume(","));
     expect(')');
@@ -172,7 +177,7 @@ Node *parse_decleration() {
   if(find_lvar(name))
     error_at(global_token->string, "Variable already declared");
 
-  LocalVariable *variable = new_local_variable(name);
+  LocalVariable *variable = new_local_variable(name, type_int);
 
   Node *block = new_node(NODE_BLOCK, NULL, NULL);
   
