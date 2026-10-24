@@ -407,6 +407,19 @@ Node *unary() {
   return postfix();
 }
 
+Node *parse_index(Node *node) {
+  Node *index = expression();
+  expect(']');
+
+  if(node->type->kind != TYPE_POINTER)
+    error("Attempted to index a non pointer");  
+
+  Node *add = new_additive_node(NODE_ADD, node, index);
+  Node *deref = new_node(NODE_DEREFERENCE, add, NULL);
+  deref->type = add->type->base;
+  return deref;
+}
+
 Node *postfix() {
     Node *node = primary();
     for(;;) {  
@@ -414,7 +427,9 @@ Node *postfix() {
         node = new_node(NODE_POST_INCREMENT, node, NULL);
       else if(consume("--"))
         node = new_node(NODE_POST_DECREMENT, node, NULL);
-      else
+      else if(consume("[")) {
+        node = parse_index(node);
+      } else
         return node;
     }
 }
@@ -478,4 +493,3 @@ Node *primary() {
 
     return new_node_number(expect_number());
 }
-

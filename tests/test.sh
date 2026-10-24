@@ -587,4 +587,11 @@ assert_error 'Cannot subtract pointers to different types' \
 # Recursive type compatibility: int ** versus char **
 assert_error 'Cannot subtract pointers to different types' \
   'int main() { int *p; char *q; return &p-&q; }'
+
+# Pointer Indexing
+assert 104 'char *s="hello"; return s[0];'
+assert 101 'char *s="hello"; return s[1];'
+assert 9 'int x=1; int *p=&x; p[0]=9; return x;'
+assert 3 'int x=1; int *p=&x; p[0]++; return x+1;'
+
 finish || exit 1
