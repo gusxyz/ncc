@@ -534,4 +534,14 @@ assert 9 'u8 x=1; u8 *p; p=&x; *p=9; return x;'
 assert 65 "return 'A';"
 assert 65 "char c='A'; return c;"
 
+# String literals
+assert 65 'return *"A";'
+assert 104 'char *s="hello"; return *s;'
+assert 0 'char *s=""; return *s;'
+
+# Separate literals need separate labels
+assert 195 'char *a="a"; char *b="b"; return *a+*b;'
+
+# Passing a string to a function
+assert_program 90 'int first(char *s) { return *s; } int main() { return first("Z"); }'
 finish || exit 1

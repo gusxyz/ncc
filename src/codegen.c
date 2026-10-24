@@ -129,6 +129,22 @@ static int continue_label = -1;
 
 int new_label() { return next_label_id++; }
 
+void generate_string_literal(Node *node) {
+    int id = new_label();
+
+    emit_directive(".section .rodata");
+    emit_label(".L.string.%d", id);
+
+    for(size_t i = 0; i < node->string_length; ++i)
+      emit_directive(".byte %d", node->string_value[i]);
+
+    emit_directive(".byte 0");
+    emit_directive(".text"); // back to code
+
+    emit("lea rax, [rip + .L.str.%d]", id);
+    emit("push rax");
+}
+
 void print_header() {
   emit_directive(".intel_syntax noprefix");
   emit_directive(".text");
@@ -207,6 +223,9 @@ void generate_expression(Node *node) {
  switch(node->kind) {
   case NODE_NUMBER:
     emit("push %d", node->value);
+    return;
+  case NODE_STRING_LITERAL:
+    generate_string_literal(node);
     return;
   case NODE_FUNCTION_CALL:
     generate_function_call(node);

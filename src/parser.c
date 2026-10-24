@@ -380,6 +380,17 @@ Node *primary() {
         return node;
     }
 
+    if(global_token->kind == TOKEN_STRING_LITERAL) {
+      Node *node = new_node(NODE_STRING_LITERAL, NULL, NULL);
+      node->type = pointer_to(type_u8);
+      node->string_length = global_token->length;
+      node->string_value = calloc(node->string_length + 1, 1);
+      memcpy(node->string_value, global_token->string, node->string_length);
+
+      advance_tokenizer();
+      return node;
+    }
+
     Token *identifier_token = consume_identifier();
     if (identifier_token) {
       // its a function  

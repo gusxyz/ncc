@@ -158,7 +158,6 @@ Token *tokenize(char *current_char){
           error("String escapes aren't supported yet");
         if (*current_char == '\n')
           error("Newline inside string literal");
-
         current_char++;
       }
 
