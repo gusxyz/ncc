@@ -29,9 +29,17 @@ struct Token {
   TokenKind kind;
   Token *next_token;
   int value;         
-  char *string;      
+  char *string; 
+  char *string_value;
+  size_t string_length;     
   size_t length;
 };
+
+typedef struct {
+  char *items;
+  size_t count;
+  size_t capacity;
+} ByteArray;
 
 typedef struct {
   const char *name;

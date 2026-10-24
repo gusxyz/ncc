@@ -4,6 +4,7 @@
 #include <string.h>
 #include <token.h>
 #include <error.h>
+#include <da.h>
 
 Token *global_token;
 
@@ -111,6 +112,42 @@ static TokenKind keyword_kind(const char *text, size_t length) {
   return TOKEN_IDENTIFIER;
 }
 
+static int read_literal_byte(char **cursor) {
+  unsigned char value = **cursor;
+
+  if (value == '\0' || value == '\n' || value == '\r')
+    error("Unexpected end of literal");
+
+  (*cursor)++;
+
+  if (value != '\\')
+    return value;
+
+  // The cursor now points at the character after the backslash.
+  value = **cursor;
+
+  if (value == '\0' || value == '\n' || value == '\r')
+    error("Unterminated escape sequence");
+
+  (*cursor)++;
+
+  switch (value) {
+    case 'n':  return '\n';
+    case 't':  return '\t';
+    case 'r':  return '\r';
+    case '0':  return '\0';
+    case '\\': return '\\';
+    case '"':  return '"';
+    case '\'': return '\'';
+    default:
+      error("Unknown escape sequence: \\%c", value);
+  }
+
+  return 0;
+}
+
+
+
 Token *tokenize(char *current_char){
   Token head_token;
   head_token.next_token = NULL;
@@ -148,47 +185,51 @@ Token *tokenize(char *current_char){
       current_token->value = strtol(current_char, &current_char, 10);
       continue;
     }
-
+  
+    
     if (*current_char == '"') {
-      char *start = current_char + 1;
+      char *start = current_char;
       current_char++;
 
+      ByteArray bytes = {0};
+
       while (*current_char && *current_char != '"') {
-        if (*current_char == '\\')
-          error("String escapes aren't supported yet");
-        if (*current_char == '\n')
-          error("Newline inside string literal");
-        current_char++;
+        int byte = read_literal_byte(&current_char);
+        da_append(&bytes, byte);
       }
 
       if (!*current_char)
         error("Unterminated string literal");
-
+      
+      da_append(&bytes, '\0');
+      current_char++;
+      
       Token *token = token_new(TOKEN_STRING_LITERAL, current_token, start);
-      token->length = current_char - start;
+      int length = bytes.count - 1;
+      token->length = length;
+      token->string_value = bytes.items;
+      token->string_length = length;
 
       current_token = token;
-      current_char++;
       continue;
     }
 
     if (*current_char == '\'') {
-      char *start = current_char;
-      char *value = current_char + 1;
-
-      if (!value[0] || value[1] != '\'')
+      char *start = current_char + 1;
+      current_char++;
+      if (*current_char == '\'')
         error("Expected one character between single quotes");
 
-      // Escapes such as '\n' aren't supported yet.
-      if (value[0] == '\\')
-        error("Character escapes aren't supported yet");
+      int byte = read_literal_byte(&current_char);
+      if(*current_char != '\'')
+        error("Expected a closing single quote");
+      current_char++;
 
       Token *token = token_new(TOKEN_CHAR_LITERAL, current_token, start);
-      token->value = (unsigned char)value[0];
-      token->length = 3;
+      token->value = byte;
+      token->length = current_char - start;
 
       current_token = token;
-      current_char = value + 2;
       continue;
     }
     

@@ -1,5 +1,5 @@
-# ncc - A C Compiler based on SigBus Compiler Book
+# novolang compiler
 
-Book reference that I learned from, used as a base, and expanded is here https://www.sigbus.info/compilerbook
-I plan to turn this into its own self-hosting langauge after I get the compiler book finished. I want to support some jai like features.
+I decide I wanted to build out my own self-hosted langauge so heres my attempt at that, currently in the bootstrapping stage of writing it in C till I can support enough features in my own language to self-host.
 
+First shot at a compiler or writing a proper language.
