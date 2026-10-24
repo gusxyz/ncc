@@ -10,6 +10,10 @@ static const char *argument_registers[] = {
 "rdi", "rsi", "rdx", "rcx", "r8", "r9",
 };
 
+static const char *syscall_argument_registers[] = {
+  "rdi", "rsi", "rdx", "r10", "r8", "r9",
+};
+
 static const char *byte_argument_register[] = {
 // byte sized registers
 "dil", "sil", "dl", "cl", "r8b", "r9b"
@@ -154,6 +158,31 @@ void generate_string_literal(Node *node) {
     emit("push rax");
 }
 
+static void generate_syscall(Node *node) {
+  int count = node->arguments.count;
+  if(count < 1 || count > 7)
+    error("syscall expects a syscall number and at most 6 arguments.");
+
+  for (int i = 0; i < count; i++)
+    generate_expression(node->arguments.items[i]);
+
+  for (int i = count - 1; i >= 1; i--)
+    emit("pop %s", syscall_argument_registers[i - 1]);
+
+  emit("pop rax");
+  emit("syscall");
+  emit("push rax");
+}
+
+static void generate_start() {
+  emit_directive(".global _start");
+  emit_label("_start");
+  emit("call main");
+  emit("mov rdi, rax");
+  emit("mov rax, 60");
+  emit("syscall");
+}
+
 void print_header() {
   emit_directive(".intel_syntax noprefix");
   emit_directive(".text");
@@ -199,6 +228,12 @@ void generate_function(Function *function) {
 }
 
 void generate_function_call(Node* node){
+    
+    if(strcmp(node->function_name, "syscall") == 0) {
+      generate_syscall(node);
+      return;
+    }
+
     int count = node->arguments.count;
     if (count > 6)
       error("At most 6 arguments supported");
@@ -224,6 +259,7 @@ void generate_function_call(Node* node){
 
 void generate_program(Program *program) {
   print_header();
+  generate_start();
   generate_global_storage(program);
 
   for(size_t i = 0; i < program->functions.count; i++)

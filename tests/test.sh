@@ -49,7 +49,7 @@ run_program() {
     printf 'FAIL: compilation failed\nSource: %s\n' "$input" >&2
     return 1
   fi
-  if ! "$CC" -o "$dir/program" "$dir/program.s"; then
+  if ! "$CC" -nostdlib -no-pie -o "$dir/program" "$dir/program.s"; then
     printf 'FAIL: assembly/linking failed\nSource: %s\n' "$input" >&2
     return 1
   fi
@@ -615,5 +615,24 @@ assert_error 'Variable already declared' 'int f(int x) { int x=2; return x; } in
 # Global Variable
 assert_program 5 'int x; int main() { x = 5; return x; }'
 assert_program 37 'int counter; int set() { counter = 37; return 0; } int main() { set(); return counter; }'
+
+# System Calls
+# getpid: syscall number and return value
+assert 1 'return syscall(39)>0;'
+
+# close(-1) returns raw -EBADF (-9), rather than libc's -1
+assert 1 'return syscall(3,-1)==-9;'
+
+# kill(getpid(), 0) checks two syscall arguments and a nested syscall
+assert 1 'return syscall(62,syscall(39),0)==0;'
+
+# write(fd, buffer, length) checks three arguments; prints OK
+assert 3 'return syscall(1,1,"OK\n",3);'
+
+# exit(status) should terminate with status 42
+assert 42 'return syscall(60,42);'
+
+# runtime test
+assert_program 3 'int linux_write(int fd, char *buffer, int length) { return syscall(1, fd, buffer, length); } int main() { return linux_write(1, "OK\n", 3); }'
 
 finish || exit 1
