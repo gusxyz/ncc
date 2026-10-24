@@ -560,4 +560,31 @@ assert 34 'return *"\"";'
 # Preserve bytes after an embedded zero
 assert 98 'char *s="a\0b"; s++; s++; return *s;'
 
+# Pointer addition and subtraction
+assert 98 'char *p="abc"; return *(p+1);'
+assert 99 'char *p="abc"; return *(2+p);'
+assert 97 'char *p="abc"; return *((p+2)-2);'
+
+# Pointer differences count elements
+assert 3 'char *p="abc"; return (p+3)-p;'
+assert 1 'char *p="abc"; return ((p+1)-(p+3)) == -2;'
+assert 1 'int x; int *p=&x; return (p+1)-p;'
+
+# Shared helper must preserve integer subtraction
+assert 7 'return 10-3;'
+assert 1 'return 3-5 == -2;'
+
+# Invalid pointer arithmetic
+assert_error 'Can not add two pointers together' \
+  'int main() { int x; int *p=&x; return p+p; }'
+
+assert_error 'Cannot subtract a pointer from an integer' \
+  'int main() { int x; int *p=&x; return 1-p; }'
+
+assert_error 'Cannot subtract pointers to different types' \
+  'int main() { int x; char y; return &x-&y; }'
+
+# Recursive type compatibility: int ** versus char **
+assert_error 'Cannot subtract pointers to different types' \
+  'int main() { int *p; char *q; return &p-&q; }'
 finish || exit 1

@@ -83,44 +83,32 @@ void generate_assign(Node *node) {
   emit("push rdi");
 }
 
-void generate_pre_increment(Node *node) {
+void generate_pre_update(Node *node) {
   Node *var = node->left_hand_side;
-  generate_local_variable(var);
+  const char *op = node->kind == NODE_PRE_INCREMENT ? "add" : "sub";
+  int step = var->type->kind == TYPE_POINTER
+    ? var->type->base->size
+    : 1;
+
+  generate_lvalue_address(var);
   emit("pop rax");
-  
-  emit("add %s PTR [rax], 1", get_type_size(var->type));
+  emit("%s %s PTR [rax], %d", op, get_type_size(var->type), step);
   load_local_value(var->type, "rax");
   emit("push rax");
 }
 
-void generate_post_increment(Node *node) {
+void generate_post_update(Node *node) {
   Node *var = node->left_hand_side;
-  generate_local_variable(var);
+  const char *op = node->kind == NODE_POST_INCREMENT ? "add" : "sub";
+  int step = var->type->kind == TYPE_POINTER
+    ? var->type->base->size
+    : 1;
 
+  generate_lvalue_address(var);
   emit("pop rax");
   load_local_value(var->type, "rdi");
   emit("push rdi");
-  emit("add %s PTR [rax], 1", get_type_size(var->type));
-}
-
-void generate_pre_decrement(Node *node) {
-  Node *var = node->left_hand_side;
-  generate_local_variable(var);
-  
-  emit("pop rax");
-  emit("sub %s PTR [rax], 1", get_type_size(var->type));
-  load_local_value(var->type, "rax");
-  emit("push rax");
-}
-
-void generate_post_decrement(Node *node) {
-    Node *var = node->left_hand_side;
-    generate_local_variable(var);
-    emit("pop rax");
-
-    load_local_value(var->type, "rdi");
-    emit("push rdi");
-    emit("sub %s PTR [rax], 1", get_type_size(var->type));
+  emit("%s %s PTR [rax], %d", op, get_type_size(var->type), step);
 }
 
 static int next_label_id;
@@ -254,17 +242,13 @@ void generate_expression(Node *node) {
   case NODE_ASSIGN:
     generate_assign(node);
     return;
-  case NODE_POST_INCREMENT:
-    generate_post_increment(node);
-    return;
   case NODE_PRE_INCREMENT:
-    generate_pre_increment(node);
+  case NODE_PRE_DECREMENT:
+    generate_pre_update(node);
     return;
   case NODE_POST_DECREMENT:
-    generate_post_decrement(node);
-    return;
-  case NODE_PRE_DECREMENT:
-    generate_pre_decrement(node);
+  case NODE_POST_INCREMENT:
+    generate_post_update(node);
     return;
   default:
     break;

@@ -203,8 +203,9 @@ Token *tokenize(char *current_char){
       
       da_append(&bytes, '\0');
       current_char++;
-      
+
       Token *token = token_new(TOKEN_STRING_LITERAL, current_token, start);
+
       int length = bytes.count - 1;
       token->length = length;
       token->string_value = bytes.items;

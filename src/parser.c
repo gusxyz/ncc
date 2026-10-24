@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <parser.h>
+#include <sys/types.h>
 #include <token.h>
 #include <da.h>
 #include <error.h>
@@ -261,8 +262,10 @@ Node *expression() { return assign(); }
 
 Node *assign() {
   Node *node = equality();
-  if(consume("=")) 
+  if(consume("=")) {
     node = new_node(NODE_ASSIGN, node, assign());
+    node->type = node->left_hand_side->type;
+  }
   return node;
 }
 
@@ -294,13 +297,61 @@ Node *relational() {
   }
 }
 
+Node *new_additive_node(NodeKind kind, Node *left, Node *right) {
+  TypeKind left_kind = left->type->kind;
+  TypeKind right_kind = right->type->kind;
+  bool left_integer = left_kind == TYPE_INT || left_kind == TYPE_U8;
+  bool right_integer = right_kind == TYPE_INT || right_kind == TYPE_U8;
+  bool left_pointer = left_kind == TYPE_POINTER;
+  bool right_pointer = right_kind == TYPE_POINTER;
+
+  if (left_integer && right_integer) {
+    Node *node = new_node(kind, left, right);
+    node->type = type_int;
+    return node;
+  }
+
+  if(left_pointer && right_integer) {
+    Node *scaled = new_node(NODE_MULTIPLY, right, new_node_number(left->type->base->size));
+    scaled->type = type_int;
+
+    Node *node = new_node(kind, left, scaled);
+    node->type = left->type;
+    return node;
+  }
+
+  if (left_integer && right_pointer) {
+    if (kind == NODE_SUBTRACT)
+      error("Cannot subtract a pointer from an integer");
+
+    return new_additive_node(kind, right, left);
+  }
+
+  if(left_pointer && right_pointer) {
+    if(kind == NODE_ADD)
+        error("Can not add two pointers together");
+
+    if (!types_equal(left->type->base, right->type->base))
+      error("Cannot subtract pointers to different types");
+    Node *diff = new_node(NODE_SUBTRACT, left, right);
+    diff->type = type_int;
+
+    Node *node = new_node(NODE_DIVIDE, diff, new_node_number(left->type->base->size));
+    node->type = type_int;
+    return node;
+  }
+
+  error("Invalid operands for additive expression");
+  return NULL;
+}
+
 Node *add() {
   Node *node = multiply();
   for (;;) {
     if (consume("+"))
-      node = new_node(NODE_ADD, node, multiply());
-    else if (consume("-"))
-      node = new_node(NODE_SUBTRACT, node, multiply());
+      node = new_additive_node(NODE_ADD, node, multiply());
+    else if(consume("-"))
+      node = new_additive_node(NODE_SUBTRACT, node, multiply());
     else
       return node;
   }
@@ -309,10 +360,14 @@ Node *add() {
 Node *multiply() {
   Node *node = unary();
   for (;;) {
-    if (consume("*"))
+    if (consume("*")) {
       node = new_node(NODE_MULTIPLY, node, unary());
-    else if (consume("/"))
+      node->type = type_int;
+    }
+    else if (consume("/")) {
       node = new_node(NODE_DIVIDE, node, unary());
+      node->type = type_int;
+    }
     else
       return node;
   }
@@ -397,6 +452,7 @@ Node *primary() {
       if(consume("(")) {
         Node *node = calloc(1, sizeof(Node));
         node->kind = NODE_FUNCTION_CALL;
+        node->type = type_int;
 
         size_t length = identifier_token->length;
         node->function_name = calloc(length +1, sizeof(char));

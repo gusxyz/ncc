@@ -24,3 +24,13 @@ Type *pointer_to(Type *base) {
     type->base = base;
     return type;
 }
+
+bool types_equal(Type *left, Type *right) {
+  if (left->kind != right->kind)
+    return false;
+
+  if (left->kind == TYPE_POINTER)
+    return types_equal(left->base, right->base);
+
+  return true;
+}
