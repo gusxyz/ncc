@@ -8,7 +8,22 @@
 #include <da.h>
 #include <error.h>
 
-LocalVariable *locals;
+typedef struct Scope Scope;
+
+struct Scope {
+  Scope *parent;
+  LocalVariable *locals;
+};
+
+static Scope *current_scope;
+static int local_offset;
+static int max_local_offset;
+
+static void enter_scope() {
+  Scope *scope = calloc(1,sizeof(*scope));
+  scope->parent = current_scope;
+  current_scope = scope;
+}
 
 Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side) {
   Node *node = calloc(1, sizeof(Node));
@@ -60,10 +75,19 @@ Type *parse_type() {
   return type;
 }
 
-LocalVariable *find_lvar(Token* token) {
-  for (LocalVariable *var = locals; var; var = var->next) 
+static LocalVariable *find_lvar_in_scope(Token *token) {
+  for(LocalVariable *var = current_scope->locals; var; var = var->next) {
     if(var->length == token->length && !memcmp(token->string, var->name, var->length))
       return var;
+  }
+  return NULL;
+}
+
+LocalVariable *find_lvar(Token* token) {
+  for(Scope *scope = current_scope; scope; scope = scope->parent)
+    for (LocalVariable *var = scope->locals; var; var = var->next) 
+      if(var->length == token->length && !memcmp(token->string, var->name, var->length))
+        return var;
   return NULL;
 }
 
@@ -73,12 +97,17 @@ LocalVariable *new_local_variable(Token *token, Type *type) {
     local_var->name = token->string;
     local_var->length = token->length;
     local_var->type = type;
-    int used = locals ? locals->offset : 0;
-    int end = used + type->size;
+
+    int end = local_offset + type->size;
 
     local_var->offset = (end + type->alignment - 1) / type->alignment * type->alignment;
-    local_var->next = locals;
-    locals = local_var;
+
+    local_offset = local_var->offset;
+    if(local_offset > max_local_offset)
+      max_local_offset = local_offset;
+
+    local_var->next = current_scope->locals;
+    current_scope->locals = local_var;
 
     return local_var;
 }
@@ -104,7 +133,12 @@ Function *parse_function() {
   function->name = calloc(name->length + 1, sizeof(char));
   memcpy(function->name, name->string, name->length);
 
-  locals = NULL;  expect('(');
+  current_scope = NULL;
+  local_offset = 0;
+  max_local_offset =0 ;
+  enter_scope();
+    
+  expect('(');
 
   if(!consume(")")) {
     do {
@@ -113,7 +147,7 @@ Function *parse_function() {
       Token *param_name = consume_identifier();
       if(!param_name)
         error_at(global_token->string, "Expected an argument name");
-      if(find_lvar(param_name))
+      if(find_lvar_in_scope(param_name))
         error_at(global_token->string, "Duplicate argument name");
       if(function->paramaters.count >= 6)
         error_at(param_name->string, "At most 6 paramaters allowed");
@@ -124,10 +158,8 @@ Function *parse_function() {
     expect(')');
   }
 
-  function->body = parse_block();
-
-  int bytes = locals ? locals->offset : 0;
-  function->stack_size = (bytes + 15) / 16 * 16;
+  function->body = parse_block_contents();
+  function->stack_size = (max_local_offset + 15) / 16 * 16;
 
   return function;
 }
@@ -164,7 +196,7 @@ Node *parse_while() {
   return node;
 }
 
-Node *parse_block() {
+static Node *parse_block_contents() {
   Node *node = new_node(NODE_BLOCK, NULL, NULL);
   expect('{');
 
@@ -174,6 +206,17 @@ Node *parse_block() {
     da_append(&node->body, statement());
   }
 
+  return node;
+}
+
+Node *parse_block() {
+
+  Scope *parent = current_scope;
+  enter_scope();
+
+  Node *node = parse_block_contents();
+  
+  current_scope = parent;
   return node;
 }
 
@@ -202,7 +245,7 @@ Node *parse_decleration(Type *type) {
   if(!name)
     error_at(global_token->string, "Expected a variable name");
 
-  if(find_lvar(name))
+  if(find_lvar_in_scope(name))
     error_at(global_token->string, "Variable already declared");
 
   LocalVariable *variable = new_local_variable(name, type);

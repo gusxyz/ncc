@@ -113,7 +113,7 @@ LocalVariable *new_local_variable(Token *token, Type *type);
 
 // Grammar
 Program *parse_program();
-Node *parse_block();
+static Node *parse_block_contents();
 Node *parse_decleration(Type *type);
 Node *statement();
 Node *expression();
