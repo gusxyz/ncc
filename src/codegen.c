@@ -141,7 +141,7 @@ void generate_string_literal(Node *node) {
     emit_directive(".byte 0");
     emit_directive(".text"); // back to code
 
-    emit("lea rax, [rip + .L.str.%d]", id);
+    emit("lea rax, [rip + .L.string.%d]", id);
     emit("push rax");
 }
 
