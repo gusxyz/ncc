@@ -38,6 +38,22 @@ char *get_type_reg(Type *type) {
   return reg;
 }
 
+static void generate_global_storage(Program *program) {
+  if(program->globals.count == 0)
+    return;
+
+  emit_directive(".bss");
+  for(size_t i = 0; i < program->globals.count; ++i) {
+    GlobalVariable *global = program->globals.items[i];
+
+    emit_directive(".balign %d", global->type->alignment);
+    emit_label(".L.global.%s", global->name);
+    emit_directive(".zero %d", global->type->size);
+  }
+  
+  emit_directive(".text");
+}
+
 static void load_local_value(Type *type, const char *reg) {
   if (type->kind == TYPE_U8)
     emit("movzx %s, BYTE PTR [rax]", reg);
@@ -49,6 +65,11 @@ void generate_lvalue_address(Node* node) {
   if(node->kind == NODE_LOCAL_VARIABLE) {
     emit("mov rax, rbp");
     emit("sub rax, %d", node->offset);
+    emit("push rax");
+    return;
+  }
+  if (node->kind == NODE_GLOBAL_VARIABLE) {
+    emit("lea rax, [rip + .L.global.%s]", node->global->name);
     emit("push rax");
     return;
   }
@@ -203,7 +224,9 @@ void generate_function_call(Node* node){
 
 void generate_program(Program *program) {
   print_header();
-  for(size_t i = 0; i <program->functions.count; i++)
+  generate_global_storage(program);
+
+  for(size_t i = 0; i < program->functions.count; i++)
     generate_function(program->functions.items[i]);
 }
 
@@ -217,6 +240,12 @@ void generate_expression(Node *node) {
     return;
   case NODE_FUNCTION_CALL:
     generate_function_call(node);
+    return;
+  case NODE_GLOBAL_VARIABLE:
+    generate_lvalue_address(node);
+    emit("pop rax");
+    load_local_value(node->type, "rax");
+    emit("push rax");
     return;
   case NODE_LOCAL_VARIABLE:
     generate_local_variable(node);

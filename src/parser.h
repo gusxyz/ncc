@@ -19,6 +19,7 @@ typedef enum {
   NODE_NUMBER,
   NODE_ASSIGN,
   NODE_LOCAL_VARIABLE,
+  NODE_GLOBAL_VARIABLE,
   NODE_RETURN,
   NODE_IF,
   NODE_WHILE,
@@ -38,7 +39,7 @@ typedef enum {
 } NodeKind;
 
 typedef struct Node Node;
-
+typedef struct GlobalVariable GlobalVariable;
 typedef struct {
   Node **items;
   size_t count;
@@ -69,6 +70,7 @@ struct Node {
   
   char *string_value;
   size_t string_length;
+  GlobalVariable *global;
 };
 
 typedef struct LocalVariable LocalVariable;
@@ -81,11 +83,22 @@ struct LocalVariable {
   Type* type;
 };
 
+struct GlobalVariable {
+  char *name;
+  size_t length;
+  Type* type;
+};
 typedef struct {
   LocalVariable **items;
   size_t count;
   size_t capacity;
 } ParamaterArray;
+
+typedef struct {
+  GlobalVariable **items;
+  size_t count;
+  size_t capacity;
+} GlobalsArray;
 
 typedef struct {
   char *name;
@@ -103,6 +116,7 @@ typedef struct {
 
 typedef struct {
   FunctionArray functions;
+  GlobalsArray globals;
 } Program;
 
 // Functions
@@ -113,7 +127,6 @@ LocalVariable *new_local_variable(Token *token, Type *type);
 
 // Grammar
 Program *parse_program();
-static Node *parse_block_contents();
 Node *parse_decleration(Type *type);
 Node *statement();
 Node *expression();

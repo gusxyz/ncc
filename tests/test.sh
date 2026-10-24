@@ -612,4 +612,8 @@ assert_error 'Variable already declared' 'int main() { int x=1; int x=2; return 
 # A function body shares the parameter scope, so a local cannot redeclare a parameter
 assert_error 'Variable already declared' 'int f(int x) { int x=2; return x; } int main() { return f(1); }'
 
+# Global Variable
+assert_program 5 'int x; int main() { x = 5; return x; }'
+assert_program 37 'int counter; int set() { counter = 37; return 0; } int main() { set(); return counter; }'
+
 finish || exit 1

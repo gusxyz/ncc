@@ -19,6 +19,8 @@ static Scope *current_scope;
 static int local_offset;
 static int max_local_offset;
 
+static Program *current_program;
+
 static void enter_scope() {
   Scope *scope = calloc(1,sizeof(*scope));
   scope->parent = current_scope;
@@ -91,6 +93,17 @@ LocalVariable *find_lvar(Token* token) {
   return NULL;
 }
 
+static GlobalVariable *find_global(Token *token) {
+  for(size_t i = 0; i <current_program->globals.count; i++) {
+    GlobalVariable *global = current_program->globals.items[i];
+
+    if(global->length == token->length && !memcmp(global->name, token->string, token->length)) {
+      return global;
+    }
+  }
+  return NULL;
+}
+
 LocalVariable *new_local_variable(Token *token, Type *type) {
     LocalVariable *local_var = calloc(1, sizeof(LocalVariable));
 
@@ -120,10 +133,31 @@ Node *new_node_local_variable(LocalVariable *local_var) {
     return node;
 }
 
-Function *parse_function() {
-  Type *type = parse_type();
+static Node *parse_block_contents() {
+  Node *node = new_node(NODE_BLOCK, NULL, NULL);
+  expect('{');
 
-  Token *name = consume_identifier();
+  while (!consume("}")) {
+    if (at_eof())
+      error("Expected '}' before end of input");
+    da_append(&node->body, statement());
+  }
+
+  return node;
+}
+
+Node *parse_block() {
+
+  Scope *parent = current_scope;
+  enter_scope();
+
+  Node *node = parse_block_contents();
+  
+  current_scope = parent;
+  return node;
+}
+
+static Function *parse_function(Type *type, Token *name) {
   if (!name)
     error_at(global_token->string, "Expected a function name");
 
@@ -137,7 +171,7 @@ Function *parse_function() {
   local_offset = 0;
   max_local_offset =0 ;
   enter_scope();
-    
+
   expect('(');
 
   if(!consume(")")) {
@@ -164,13 +198,34 @@ Function *parse_function() {
   return function;
 }
 
+static void parse_global_variable(Program *program, Type *type, Token *name) {
+  GlobalVariable *global = calloc(1, sizeof(*global));
+
+  global->name = calloc(name->length + 1, 1);
+  memcpy(global->name, name->string, name->length);
+  global->length = name->length;
+  global->type = type;
+
+  da_append(&program->globals, global);
+  expect(';');
+}
+
 Program *parse_program() {
-  Program *program = calloc(1, sizeof(Program));
+  Program *program = calloc(1, sizeof(*program));
+  current_program = program;
 
   while (!at_eof()) {
-    da_append(&program->functions, parse_function());
-  }
+    Type *type = parse_type();
 
+    Token *name = consume_identifier();
+    if(!name)
+      error_at(global_token->string, "Expected a global or function name");
+
+    if(global_token->kind == TOKEN_RESERVED && global_token->string[0] == '(')
+      da_append(&program->functions, parse_function(type,name));
+    else
+     parse_global_variable(program, type, name);
+  }
   return program;
 }
 
@@ -193,30 +248,6 @@ Node *parse_while() {
   expect(')');
   node->then = statement();
 
-  return node;
-}
-
-static Node *parse_block_contents() {
-  Node *node = new_node(NODE_BLOCK, NULL, NULL);
-  expect('{');
-
-  while (!consume("}")) {
-    if (at_eof())
-      error("Expected '}' before end of input");
-    da_append(&node->body, statement());
-  }
-
-  return node;
-}
-
-Node *parse_block() {
-
-  Scope *parent = current_scope;
-  enter_scope();
-
-  Node *node = parse_block_contents();
-  
-  current_scope = parent;
   return node;
 }
 
@@ -526,12 +557,21 @@ Node *primary() {
         return node;
       }
 
-      LocalVariable *local_var = find_lvar(identifier_token);
-
-      if (!local_var)
-        error_at(identifier_token->string, "Undeclared variable");
-
+    // variable handling
+    LocalVariable *local_var = find_lvar(identifier_token);
+    if (local_var)
       return new_node_local_variable(local_var);
+
+    GlobalVariable *global = find_global(identifier_token);
+    if (global) {
+      Node *node = calloc(1, sizeof(*node));
+      node->kind = NODE_GLOBAL_VARIABLE;
+      node->global = global;
+      node->type = global->type;
+      return node;
+    }
+
+    error_at(identifier_token->string, "Undeclared variable");
     }
 
     return new_node_number(expect_number());
