@@ -101,10 +101,13 @@ typedef struct {
 } GlobalsArray;
 
 typedef struct {
+  int stack_size;
+  char *source_text;
   char *name;
   Node *body;
   ParamaterArray paramaters;
-  int stack_size;
+  Token *body_tokens;
+  LocalVariable *locals;
   Type *return_type;
 } Function;
 
@@ -115,8 +118,20 @@ typedef struct {
 } FunctionArray;
 
 typedef struct {
+  char *path;
+  const char* from_path;
+} ImportRequest;
+
+typedef struct {
+  ImportRequest *items;
+  size_t count;
+  size_t capacity;
+} ImportArray;
+
+typedef struct {
   FunctionArray functions;
   GlobalsArray globals;
+  ImportArray imports;
 } Program;
 
 // Functions
@@ -126,7 +141,9 @@ LocalVariable *find_lvar(Token *token);
 LocalVariable *new_local_variable(Token *token, Type *type);
 
 // Grammar
-Program *parse_program();
+void parse();
+void parse_source(Program *program, const char *source_path);
+void parse_function_bodies(Program *program);
 Node *parse_decleration(Type *type);
 Node *statement();
 Node *expression();

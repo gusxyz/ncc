@@ -1,5 +1,5 @@
-#include "parser.h"
-#include "type.h"
+#include <parser.h>
+#include <type.h>
 #include <codegen.h>
 #include <error.h>
 #include <emit.h>

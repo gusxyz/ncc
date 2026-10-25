@@ -21,6 +21,8 @@ typedef enum {
   TOKEN_CHAR,
   TOKEN_CHAR_LITERAL,
   TOKEN_STRING_LITERAL,
+  TOKEN_IMPORT,
+  TOKEN_STRUCT,
 } TokenKind;
 
 typedef struct Token Token;
@@ -34,12 +36,6 @@ struct Token {
   size_t string_length;     
   size_t length;
 };
-
-typedef struct {
-  char *items;
-  size_t count;
-  size_t capacity;
-} ByteArray;
 
 typedef struct {
   const char *name;

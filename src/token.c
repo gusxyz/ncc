@@ -35,6 +35,7 @@ static const Keyword keywords[] = {
   {"return",   TOKEN_RETURN},
   {"break",    TOKEN_BREAK},
   {"continue", TOKEN_CONTINUE},
+  {"struct", TOKEN_STRUCT},
 };
 
 // if next token is the expected symbol advance and return true
@@ -150,8 +151,6 @@ static int read_literal_byte(char **cursor) {
   return 0;
 }
 
-
-
 Token *tokenize(char *current_char){
   Token head_token;
   head_token.next_token = NULL;
@@ -160,6 +159,15 @@ Token *tokenize(char *current_char){
   while(*current_char) {
     if(isspace(*current_char)) {
       current_char++;
+      continue;
+    }
+
+    if(strncmp(current_char, "#import", 7) == 0 && 
+    !isalnum(current_char[7]) &&
+    current_char[7] != '_') {
+      current_token = token_new(TOKEN_IMPORT, current_token, current_char);
+      current_token->length = 7;
+      current_char += 7;
       continue;
     }
 
@@ -189,7 +197,6 @@ Token *tokenize(char *current_char){
       current_token->value = strtol(current_char, &current_char, 10);
       continue;
     }
-  
     
     if (*current_char == '"') {
       char *start = current_char;

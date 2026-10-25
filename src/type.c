@@ -26,11 +26,15 @@ Type *pointer_to(Type *base) {
 }
 
 bool types_equal(Type *left, Type *right) {
-  if (left->kind != right->kind)
+  if (left == right)
+    return true;
+  if (!left || !right || left->kind != right->kind)
     return false;
 
   if (left->kind == TYPE_POINTER)
     return types_equal(left->base, right->base);
-
+  
+  if (left->kind == TYPE_STRUCT)
+    return false;
   return true;
 }

@@ -45,7 +45,7 @@ run_program() {
   local dir="$1" expected="$2" input="$3" actual
   printf '%s\n' "$input" > "$dir/input.ncc"
 
-  if ! "$NCC" "$input" > "$dir/program.s"; then
+  if ! "$NCC" -e "$input" > "$dir/program.s"; then
     printf 'FAIL: compilation failed\nSource: %s\n' "$input" >&2
     return 1
   fi
@@ -63,10 +63,34 @@ run_program() {
   printf '%s => %s\n' "$input" "$actual"
 }
 
+run_import_program() {
+  local dir="$1" expected="$2" actual
+
+  if ! "$NCC" "lib/main.nl" > "$dir/program.s"; then
+    printf 'FAIL: import compilation failed\n' >&2
+    return 1
+  fi
+
+  if ! "$CC" -nostdlib -no-pie -o "$dir/program" "$dir/program.s"; then
+    printf 'FAIL: assembly/linking failed\n' >&2
+    return 1
+  fi
+
+  "$dir/program"
+  actual=$?
+
+  if (( actual != expected )); then
+    printf 'FAIL: expected %s, got %s\n' "$expected" "$actual" >&2
+    return 1
+  fi
+
+  printf 'import => %s\n' "$actual"
+}
+
 run_error() {
   local dir="$1" expected="$2" input="$3" status
   printf '%s\n' "$input" > "$dir/input.ncc"
-  "$NCC" "$input" > "$dir/program.s" 2> "$dir/compiler.err"
+  "$NCC" -e "$input" > "$dir/program.s" 2> "$dir/compiler.err"
   status=$?
 
   if (( status == 0 || status >= 128 )); then
@@ -132,6 +156,7 @@ submit() {
 }
 
 assert_program() { submit run_program "$1" "$2"; }
+assert_import_program() { submit run_import_program "$1"; }
 assert() { assert_program "$1" "int main() { $2 }"; }
 assert_error() { submit run_error "$1" "$2"; }
 
@@ -634,5 +659,8 @@ assert 42 'return syscall(60,42);'
 
 # runtime test
 assert_program 3 'int linux_write(int fd, char *buffer, int length) { return syscall(1, fd, buffer, length); } int main() { return linux_write(1, "OK\n", 3); }'
+
+# import program test
+assert_import_program 66
 
 finish || exit 1

@@ -53,7 +53,8 @@ bool consume_kind(TokenKind kind) {
 bool is_type_start() {
   if(global_token->kind == TOKEN_INT ||
     global_token->kind == TOKEN_U8 ||
-    global_token->kind == TOKEN_CHAR)
+    global_token->kind == TOKEN_CHAR ||
+    global_token->kind == TOKEN_STRUCT)
     return true;
 
   return false;
@@ -157,6 +158,75 @@ Node *parse_block() {
   return node;
 }
 
+static void parse_paramaters(Function *function) {
+  Type *parameter_type = parse_type();
+
+  Token *param_name = consume_identifier();
+  if (!param_name)
+    error_at(global_token->string, "Expected a paramater name");
+  if (find_lvar_in_scope(param_name))
+    error_at(global_token->string, "Duplicate paramater name");
+  if (function->paramaters.count >= 6)
+    error_at(param_name->string, "At most 6 paramaters allowed");
+
+  LocalVariable *argument = new_local_variable(param_name, parameter_type);
+  da_append(&function->paramaters, argument);
+}
+
+void parse_function_bodies(Program *program) {
+  current_program = program;
+
+  for (size_t i = 0; i < program->functions.count; i++) {
+    Function *function = program->functions.items[i];
+
+    set_user_input(function->source_text);
+    set_token(function->body_tokens);
+
+    current_scope = NULL;
+    enter_scope();
+
+    current_scope->locals = function->locals;
+
+    local_offset = function->locals ? function->locals->offset : 0;
+    max_local_offset = local_offset;
+
+    function->body = parse_block_contents();
+    function->locals = current_scope->locals;
+    function->stack_size = (max_local_offset + 15) / 16 * 16;
+
+    current_scope = NULL;
+  }
+}
+
+static Function *find_function(Token *name) {
+  for (size_t i = 0; i < current_program->functions.count; i++) {
+    Function *function = current_program->functions.items[i];
+
+    if (strlen(function->name) == name->length &&
+        memcmp(function->name, name->string, name->length) == 0)
+        return function;
+  }
+  
+  return NULL;
+}
+
+static void skip_function_body() {
+  expect('{' );
+  int depth = 1;
+
+  while (depth > 0) {
+    if (at_eof())
+      error("Expected '} before end of function");
+
+    if (consume("{"))
+      depth++;
+    else if (consume("}"))
+      depth--;
+    else
+     advance_tokenizer();
+  }
+}
+
 static Function *parse_function(Type *type, Token *name) {
   if (!name)
     error_at(global_token->string, "Expected a function name");
@@ -176,25 +246,18 @@ static Function *parse_function(Type *type, Token *name) {
 
   if(!consume(")")) {
     do {
-      Type *parameter_type = parse_type();
-    
-      Token *param_name = consume_identifier();
-      if(!param_name)
-        error_at(global_token->string, "Expected an argument name");
-      if(find_lvar_in_scope(param_name))
-        error_at(global_token->string, "Duplicate argument name");
-      if(function->paramaters.count >= 6)
-        error_at(param_name->string, "At most 6 paramaters allowed");
-
-      LocalVariable *argument = new_local_variable(param_name, parameter_type);
-      da_append(&function->paramaters, argument);
+      parse_paramaters(function);
     } while(consume(","));
     expect(')');
   }
 
-  function->body = parse_block_contents();
-  function->stack_size = (max_local_offset + 15) / 16 * 16;
+  function->body_tokens = global_token;
+  function->source_text = get_user_input();
+  function->locals = current_scope->locals;
 
+  skip_function_body();
+
+  current_scope = NULL;
   return function;
 }
 
@@ -210,23 +273,43 @@ static void parse_global_variable(Program *program, Type *type, Token *name) {
   expect(';');
 }
 
-Program *parse_program() {
-  Program *program = calloc(1, sizeof(*program));
+void parse_source(Program *program, const char *source_path) {
   current_program = program;
 
   while (!at_eof()) {
+    if(consume_kind(TOKEN_IMPORT)) {
+      Token *path = global_token;
+
+      if(path->kind != TOKEN_STRING_LITERAL)
+        error_at(path->string, "Expected a string literal");
+
+      if(path->string_length == 0 || memchr(path->string_value, '\0', path->string_length))
+        error_at(path->string, "Invalid import path");
+
+      ImportRequest request = {
+        .path = path->string_value,
+        .from_path = source_path,
+      };
+
+      da_append(&program->imports, request);
+      advance_tokenizer();
+      continue;
+    }
+    
     Type *type = parse_type();
 
     Token *name = consume_identifier();
     if(!name)
       error_at(global_token->string, "Expected a global or function name");
 
+    if (find_global(name) || find_function(name))
+      error_at(name->string, "Name already declared");
+    
     if(global_token->kind == TOKEN_RESERVED && global_token->string[0] == '(')
       da_append(&program->functions, parse_function(type,name));
     else
      parse_global_variable(program, type, name);
   }
-  return program;
 }
 
 Node *parse_if() {
@@ -539,9 +622,16 @@ Node *primary() {
     if (identifier_token) {
       // its a function  
       if(consume("(")) {
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = NODE_FUNCTION_CALL;
-        node->type = type_int;
+        bool is_syscall = identifier_token->length == 7 && memcmp(identifier_token->string, "syscall", 7) == 0;
+
+        Function *function = find_function(identifier_token);
+
+        if(!function && !is_syscall)
+          error_at(identifier_token->string, "Undeclared function");
+
+        Node *node = new_node(NODE_FUNCTION_CALL, NULL, NULL);
+        node->token = identifier_token;
+        node->type = is_syscall ? type_int : function->return_type;
 
         size_t length = identifier_token->length;
         node->function_name = calloc(length +1, sizeof(char));
@@ -554,6 +644,11 @@ Node *primary() {
 
           expect(')');
         }
+        if (!is_syscall && node->arguments.count != function->paramaters.count)
+          error_at(identifier_token->string,
+              "Expected %zu arguments, got %zu",
+              function->paramaters.count,
+              node->arguments.count);
         return node;
       }
 
