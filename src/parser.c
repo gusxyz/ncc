@@ -87,7 +87,7 @@ static Type *parse_struct_type() {
     error_at(global_token->string, "Expected a struct name");
 
   StructTag *tag = find_struct_tag(name);
-  if(consume("{")) {
+  if(!consume("{")) {
     if(!tag)
       error_at(name->string, "Unkown struct type");
     return tag->type;
@@ -126,7 +126,7 @@ static Type *parse_struct_type() {
 
     for(StructMember *m = type->members; m; m = m->next) {
       if(m->length == member_name->length &&
-        memcmp(m->name, member_name, member_name->length))
+        memcmp(m->name, member_name->string, member_name->length) == 0)
         error_at(member_name->string, "Duplicate member name");
     }
 
@@ -140,7 +140,7 @@ static Type *parse_struct_type() {
     member->type = member_type;
 
     int alignment = member_type->alignment;
-    offset = (offset + alignment + 1) / alignment * alignment;
+    offset = (offset + alignment - 1) / alignment * alignment;
 
     member->offset = offset;
     offset += member_type->size;
@@ -691,7 +691,8 @@ static Node *parse_member(Node* object) {
     error_at(global_token->string, "Expected a member name.");
   
   for(StructMember *member = object->type->members; member; member = member->next) { 
-    if(member->length == name->length && memcmp(member->name, name, member->length)) {
+    if(member->length == name->length && 
+      memcmp(member->name, name->string, member->length) == 0) {
       Node *node = new_node(NODE_MEMBER, object, NULL);
       node->member = member;
       node->type = member->type;

@@ -320,6 +320,7 @@ void generate_expression(Node *node) {
     emit("pop rax");
     load_local_value(node->type, "rax");
     emit("push rax");
+    return;
   case NODE_ASSIGN:
     generate_assign(node);
     return;
