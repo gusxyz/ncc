@@ -36,6 +36,7 @@ typedef enum {
   NODE_ADDRESS,
   NODE_DEREFERENCE,
   NODE_STRING_LITERAL,
+  NODE_MEMBER,
 } NodeKind;
 
 typedef struct Node Node;
@@ -71,6 +72,7 @@ struct Node {
   char *string_value;
   size_t string_length;
   GlobalVariable *global;
+  StructMember *member;
 };
 
 typedef struct LocalVariable LocalVariable;

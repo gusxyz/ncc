@@ -72,6 +72,7 @@ void generate_lvalue_address(Node* node) {
     emit("push rax");
     return;
   }
+
   if (node->kind == NODE_GLOBAL_VARIABLE) {
     emit("lea rax, [rip + .L.global.%s]", node->global->name);
     emit("push rax");
@@ -81,7 +82,14 @@ void generate_lvalue_address(Node* node) {
     generate_expression(node->left_hand_side);
     return;
   }
+  if (node->kind == NODE_MEMBER) {
+    generate_lvalue_address(node->left_hand_side);
 
+    emit("pop rax");
+    emit("add rax, %d", node->member->offset);
+    emit("push rax");
+    return;
+  }
   error("Expression is not assignable");
 }
 
@@ -267,6 +275,9 @@ void generate_program(Program *program) {
 }
 
 void generate_expression(Node *node) {
+  if (node->type && node->type->kind == TYPE_STRUCT)
+    error("Whole-struct value operations are not supported yet");
+
  switch(node->kind) {
   case NODE_NUMBER:
     emit("push %d", node->value);
@@ -304,6 +315,11 @@ void generate_expression(Node *node) {
   case NODE_ADDRESS:
     generate_lvalue_address(node->left_hand_side);
     return;
+  case NODE_MEMBER:
+    generate_lvalue_address(node);
+    emit("pop rax");
+    load_local_value(node->type, "rax");
+    emit("push rax");
   case NODE_ASSIGN:
     generate_assign(node);
     return;

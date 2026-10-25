@@ -14,14 +14,14 @@ void advance_tokenizer() {
 
 static const char *operators[] = {
     "==", "!=", "<=", ">=",
-    "++", "--",
+    "++", "--", "->",
     "+", "-", "*", "/", "&",
     "(", ")", 
     "[","]",
     "<", ">",
     "=", ";", 
     "{", "}", 
-    ",",
+    ",", "."
 };
 
 static const Keyword keywords[] = {

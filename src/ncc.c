@@ -24,6 +24,7 @@ int main(int argc, char**argv) {
     return 1;
 	}
 
+  // move everything below besides generate into parser into a parse() function
   Program *prog = calloc(1, sizeof(*prog));
 
   if(source_path)

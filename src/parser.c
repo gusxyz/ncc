@@ -9,11 +9,30 @@
 #include <error.h>
 
 typedef struct Scope Scope;
+typedef struct StructTag StructTag;
 
 struct Scope {
   Scope *parent;
   LocalVariable *locals;
 };
+
+struct StructTag {
+  Token *name;
+  Type *type;
+  StructTag *next;
+};
+
+static StructTag *struct_tags;
+
+static StructTag *find_struct_tag(Token *name) {
+  for(StructTag *tag = struct_tags; tag; tag = tag->next) {
+    if (tag->name->length == name->length &&
+        memcmp(tag->name->string, name->string, name->length) == 0)
+        return tag;
+  }
+
+  return NULL;
+}
 
 static Scope *current_scope;
 static int local_offset;
@@ -60,6 +79,86 @@ bool is_type_start() {
   return false;
 }
 
+Type *parse_type();
+
+static Type *parse_struct_type() {
+  Token *name = consume_identifier();
+  if(!name)
+    error_at(global_token->string, "Expected a struct name");
+
+  StructTag *tag = find_struct_tag(name);
+  if(consume("{")) {
+    if(!tag)
+      error_at(name->string, "Unkown struct type");
+    return tag->type;
+  }
+
+  if (current_scope)
+    error_at(name->string, "Struct definitions require top-levle scope");
+
+  if (tag)
+    error_at(name->string, "Struct with this name already defined.");
+
+  Type *type = calloc(1, sizeof(*type));
+  type->kind = TYPE_STRUCT;
+  type->alignment = 1;
+
+  tag = calloc(1, sizeof(*tag));
+  tag->name = name;
+  tag->type = type;
+  tag->next = struct_tags;
+  struct_tags = tag;
+
+  StructMember **tail = &type->members;
+  int offset = 0;
+
+  while (!consume("}")) {
+    if(at_eof())
+      error("Expected '} before end of struct");
+
+    Type *member_type = parse_type();
+    Token *member_name = consume_identifier();
+
+    if(!member_name)
+      error_at(global_token->string, "Expected a member name");
+
+    expect(';');
+
+    for(StructMember *m = type->members; m; m = m->next) {
+      if(m->length == member_name->length &&
+        memcmp(m->name, member_name, member_name->length))
+        error_at(member_name->string, "Duplicate member name");
+    }
+
+    if(member_type->size == 0)
+      error_at(member_name->string, "Member requires a complete type");
+
+    StructMember *member = calloc(1, sizeof(*member));
+    member->name = calloc(member_name->length + 1, 1);
+    memcpy(member->name, member_name->string, member_name->length);
+    member->length = member_name->length;
+    member->type = member_type;
+
+    int alignment = member_type->alignment;
+    offset = (offset + alignment + 1) / alignment * alignment;
+
+    member->offset = offset;
+    offset += member_type->size;
+    
+    if(alignment > type->alignment)
+      type->alignment = alignment;
+
+    *tail = member;
+    tail = &member->next;
+  }
+
+  if(!type->members)
+    error_at(name->string, "Declareing a struct without members is not supported");
+
+  type->size = (offset + type->alignment - 1) / type->alignment * type->alignment;
+  return type;
+}
+
 Type *parse_type() {
   Type *type;
 
@@ -69,6 +168,8 @@ Type *parse_type() {
     type = type_u8;
   else if (consume_kind(TOKEN_CHAR))
     type = type_u8;
+  else if(consume_kind(TOKEN_STRUCT))
+    type = parse_struct_type();
   else
     error_at(global_token->string, "Expected a type");
 
@@ -297,6 +398,8 @@ void parse_source(Program *program, const char *source_path) {
     }
     
     Type *type = parse_type();
+    if (type->kind == TYPE_STRUCT && consume(";"))
+      continue;
 
     Token *name = consume_identifier();
     if(!name)
@@ -553,8 +656,10 @@ Node *unary() {
   if (consume("&")) {
     Node *operand = unary();
 
-    if (operand->kind != NODE_LOCAL_VARIABLE &&
-        operand->kind != NODE_DEREFERENCE)
+  if (operand->kind != NODE_LOCAL_VARIABLE &&
+      operand->kind != NODE_GLOBAL_VARIABLE &&
+      operand->kind != NODE_DEREFERENCE &&
+      operand->kind != NODE_MEMBER)
       error("Cannot take address of a non-lvalue");
 
     Node *node = new_node(NODE_ADDRESS, operand, NULL);
@@ -577,6 +682,27 @@ Node *parse_index(Node *node) {
   return deref;
 }
 
+static Node *parse_member(Node* object) {
+  if (object->type->kind != TYPE_STRUCT)
+    error("Member access requires a struct");
+
+  Token *name = consume_identifier();
+  if(!name)
+    error_at(global_token->string, "Expected a member name.");
+  
+  for(StructMember *member = object->type->members; member; member = member->next) { 
+    if(member->length == name->length && memcmp(member->name, name, member->length)) {
+      Node *node = new_node(NODE_MEMBER, object, NULL);
+      node->member = member;
+      node->type = member->type;
+      return node;
+    }
+  }
+
+  error_at(name->string, "Unkown member of struct");
+  return NULL;
+}
+
 Node *postfix() {
     Node *node = primary();
     for(;;) {  
@@ -584,9 +710,20 @@ Node *postfix() {
         node = new_node(NODE_POST_INCREMENT, node, NULL);
       else if(consume("--"))
         node = new_node(NODE_POST_DECREMENT, node, NULL);
-      else if(consume("[")) {
+      else if(consume("[")) 
         node = parse_index(node);
-      } else
+      else if(consume("."))
+        node = parse_member(node);
+      else if(consume("->")) {
+        if(node->type->kind != TYPE_POINTER || node->type->base->kind != TYPE_STRUCT)
+          error_at(global_token->string, "Arrow access requires a pointer to a struct");
+
+        Node *deref = new_node(NODE_DEREFERENCE, node, NULL);
+        deref->type = node->type->base;
+
+        node = parse_member(deref);
+      }
+      else
         return node;
     }
 }
