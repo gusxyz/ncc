@@ -51,6 +51,27 @@ Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side) {
   node->kind = kind;
   node->left_hand_side = left_hand_side;
   node->right_hand_side = right_hand_side;
+
+    switch (kind) {
+    case NODE_EQUALS:
+    case NODE_NOT_EQUALS:
+    case NODE_LESS_THAN:
+    case NODE_EQUAL_OR_LESS_THAN:
+    case NODE_SUBTRACT:
+    case NODE_MULTIPLY:
+    case NODE_DIVIDE:
+      node->type = type_int;
+      break;
+    case NODE_PRE_INCREMENT:
+    case NODE_PRE_DECREMENT:
+    case NODE_POST_INCREMENT:
+    case NODE_POST_DECREMENT:
+      node->type = left_hand_side->type;
+      break;
+    default:
+      break;
+  }
+
   return node;
 }
 
@@ -460,20 +481,36 @@ Node *parse_decleration() {
   Token *name = consume_identifier();
   if(!name)
     error_at(global_token->string, "Expected a variable name");
-  
-  expect(':');
-  Type *type = parse_type();
-
+    
   if(find_lvar_in_scope(name))
     error_at(global_token->string, "Variable already declared");
 
-  LocalVariable *variable = new_local_variable(name, type);
+  Type *type;
+  Node *value = NULL;
+  LocalVariable *variable;
+
+  if(consume(":=")) {
+    value = assign();
+    type = value->type;
+
+    if(!type)
+      error_at(name->string, "Cannot infer initializer type");
+    variable = new_local_variable(name, type);
+  } else {
+    expect(':');
+    type = parse_type();
+    variable = new_local_variable(name, type);
+
+    if(consume("="))
+      value = assign();
+  }
+
   Node *block = new_node(NODE_BLOCK, NULL, NULL);
   
-  if(consume("=")) {
+  if(value) {
     Node *init = new_node(NODE_ASSIGN, 
                 new_node_local_variable(variable),
-               assign());
+               value);
 
     init->type = type;
     da_append(&block->body, init);
@@ -484,14 +521,15 @@ Node *parse_decleration() {
 }
 
 bool is_decleration() {
-  if(global_token->kind == TOKEN_IDENTIFIER && 
-    global_token->next_token &&
-    global_token->next_token->kind == TOKEN_RESERVED &&
-    global_token->next_token->length == 1 &&
-    global_token->next_token->string[0] == ':')
-      return true;
-  else
+  if (global_token->kind != TOKEN_IDENTIFIER)
     return false;
+
+  Token *next = global_token->next_token;
+  if (!next || next->kind != TOKEN_RESERVED)
+    return false;
+
+  return (next->length == 1 && next->string[0] == ':') ||
+         (next->length == 2 && memcmp(next->string, ":=", 2) == 0);
 }
 
 Node *statement() {
@@ -637,11 +675,9 @@ Node *multiply() {
   for (;;) {
     if (consume("*")) {
       node = new_node(NODE_MULTIPLY, node, unary());
-      node->type = type_int;
     }
     else if (consume("/")) {
       node = new_node(NODE_DIVIDE, node, unary());
-      node->type = type_int;
     }
     else
       return node;

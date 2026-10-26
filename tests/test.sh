@@ -49,8 +49,14 @@ run_program() {
     printf 'FAIL: compilation failed\nSource: %s\n' "$input" >&2
     return 1
   fi
-  if ! "$CC" -nostdlib -no-pie -o "$dir/program" "$dir/program.s"; then
-    printf 'FAIL: assembly/linking failed\nSource: %s\n' "$input" >&2
+
+  if ! as -o "$dir/program.o" "$dir/program.s"; then
+    printf 'FAIL: assembly failed\nSource: %s\n' "$input" >&2
+    return 1
+  fi
+
+  if ! ld -o "$dir/program" "$dir/program.o"; then
+    printf 'FAIL: linking failed\nSource: %s\n' "$input" >&2
     return 1
   fi
 
@@ -71,8 +77,13 @@ run_import_program() {
     return 1
   fi
 
-  if ! "$CC" -nostdlib -no-pie -o "$dir/program" "$dir/program.s"; then
-    printf 'FAIL: assembly/linking failed\n' >&2
+  if ! as -o "$dir/program.o" "$dir/program.s"; then
+    printf 'FAIL: assembly failed\nSource: %s\n' "$input" >&2
+    return 1
+  fi
+
+  if ! ld -o "$dir/program" "$dir/program.o"; then
+    printf 'FAIL: linking failed\nSource: %s\n' "$input" >&2
     return 1
   fi
 
@@ -714,6 +725,10 @@ assert_error 'Member requires a complete type' \
   'struct Node { struct Node next; }; int main() { return 0; }'
 
 # import program test
-# assert_import_program 42
+assert_import_program 40
+
+# type inference tests
+assert 40 'x := 42; ptr := &x; y := -2; return *ptr+y;'
+assert 1 'x := 6*7; same := x==42; return same;'
 
 finish || exit 1

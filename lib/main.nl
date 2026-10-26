@@ -1,5 +1,6 @@
 int main() {
-  x: int = 42;
-  p: int* = &x;
-  return *p;
+  x := 42;
+  ptr := &x;
+  y := -2;
+  return *ptr + y;
 }
