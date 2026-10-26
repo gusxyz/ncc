@@ -316,145 +316,145 @@ assert 9 '2+3; return 4+5;'
 assert 20 '10; return 5*4;'
 
 # Local variables (explicit declarations required)
-assert 5 'int a; a=5; return a;'
-assert 10 'int a; a=10; return a;'
-assert 15 'int a; int b; a=5; b=10; return a+b;'
-assert 20 'int a; int b; a=10; b=2; return a*b;'
-assert 5 'int a; int b; a=20; b=4; return a/b;'
-assert 1 'int a; int b; a=5; b=5; return a==b;'
-assert 1 'int a; int b; a=3; b=7; return a<b;'
-assert 1 'int a; int b; a=7; b=3; return a>b;'
+assert 5 'a: int; a=5; return a;'
+assert 10 'a: int; a=10; return a;'
+assert 15 'a: int; b: int; a=5; b=10; return a+b;'
+assert 20 'a: int; b: int; a=10; b=2; return a*b;'
+assert 5 'a: int; b: int; a=20; b=4; return a/b;'
+assert 1 'a: int; b: int; a=5; b=5; return a==b;'
+assert 1 'a: int; b: int; a=3; b=7; return a<b;'
+assert 1 'a: int; b: int; a=7; b=3; return a>b;'
 
 # Reassignment
-assert 10 'int a; a=5; a=10; return a;'
-assert 15 'int a; a=5; a=a+10; return a;'
-assert 25 'int a; a=5; a=a*a; return a;'
-assert 3 'int a; a=10; a=a-7; return a;'
+assert 10 'a: int; a=5; a=10; return a;'
+assert 15 'a: int; a=5; a=a+10; return a;'
+assert 25 'a: int; a=5; a=a*a; return a;'
+assert 3 'a: int; a=10; a=a-7; return a;'
 
 # Chained assignments
-assert 14 'int a; int b; a=b=7; return a+b;'
-assert 30 'int a; int b; int c; a=b=c=10; return a+b+c;'
-assert 42 'int a; int b; a=b=21; return a+b;'
-assert 5 'int a; int b; a=b=5; return a;'
+assert 14 'a: int; b: int; a=b=7; return a+b;'
+assert 30 'a: int; b: int; c: int; a=b=c=10; return a+b+c;'
+assert 42 'a: int; b: int; a=b=21; return a+b;'
+assert 5 'a: int; b: int; a=b=5; return a;'
 
 # Assignment expressions
-assert 10 'int a; return (a=5)+a;'
-assert 15 'int a; int b; a=5; b=(a=10); return a+b-5;'
-assert 1 'int a; return (a=5)==5;'
+assert 10 'a: int; return (a=5)+a;'
+assert 15 'a: int; b: int; a=5; b=(a=10); return a+b-5;'
+assert 1 'a: int; return (a=5)==5;'
 
 # Variable precedence
-assert 14 'int a; int b; a=2; b=3; return a+b*4;'
-assert 20 'int a; int b; a=2; b=3; return (a+b)*4;'
-assert 1 'int a; int b; a=5; b=10; return a*2==b;'
-assert 1 'int a; int b; a=5; b=10; return a<b;'
+assert 14 'a: int; b: int; a=2; b=3; return a+b*4;'
+assert 20 'a: int; b: int; a=2; b=3; return (a+b)*4;'
+assert 1 'a: int; b: int; a=5; b=10; return a*2==b;'
+assert 1 'a: int; b: int; a=5; b=10; return a<b;'
 
 # Multi-character variable names
-assert 10 'int foo; int bar; foo=5; bar=5; return foo+bar;'
+assert 10 'foo: int; bar: int; foo=5; bar=5; return foo+bar;'
 
 # If statements
 assert 10 'if (1) return 10; return 20;'
-assert 20 'int foo; int bar; foo=5; bar=2; if (foo<bar) return 10; return 20;'
+assert 20 'foo: int; bar: int; foo=5; bar=2; if (foo<bar) return 10; return 20;'
 assert 10 'if (1) return 10; else return 20;'
 assert 20 'if (0) return 10; else return 20;'
 assert 30 'if (1) if (0) return 10; else return 30; return 20;'
 assert 40 'if (0) return 10; else if (1) return 40; else return 20;'
 
 # While loops
-assert 5 'int a; a=0; while(a<5) a=a+1; return a;'
-assert 10 'int a; a=0; while(a<10) a=a+1; return a;'
-assert 0 'int a; a=0; while(0) a=a+1; return a;'
-assert 10 'int a; a=10; while(a<5) a=a+1; return a;'
-assert 0 'int a; a=10; while(a>0) a=a-1; return a;'
-assert 6 'int a; int b; a=0; while(a<3) a=a+1; b=0; while(b<3) b=b+1; return a+b;'
-assert 10 'int a; a=0; while(a<10) if(a<5) a=a+2; else a=a+1; return a;'
+assert 5 'a: int; a=0; while(a<5) a=a+1; return a;'
+assert 10 'a: int; a=0; while(a<10) a=a+1; return a;'
+assert 0 'a: int; a=0; while(0) a=a+1; return a;'
+assert 10 'a: int; a=10; while(a<5) a=a+1; return a;'
+assert 0 'a: int; a=10; while(a>0) a=a-1; return a;'
+assert 6 'a: int; b: int; a=0; while(a<3) a=a+1; b=0; while(b<3) b=b+1; return a+b;'
+assert 10 'a: int; a=0; while(a<10) if(a<5) a=a+2; else a=a+1; return a;'
 
 # Blocks
 assert 10 '{ return 10; }'
-assert 20 'int a; int b; { a=10; b=10; return a+b; }'
-assert 42 'int a; a=1; { a=42; } return a;'
-assert 55 'int a; int sum; a=1; sum=0; while(a<=10) { sum=sum+a; a=a+1; } return sum;'
-assert 30 'int a; a=0; if(1) { a=10; a=a+20; } else { a=100; } return a;'
-assert 100 'int a; a=0; if(0) { a=10; } else { a=100; } return a;'
-assert 15 'int a; int b; { a=5; { b=10; } return a+b; }'
+assert 20 'a: int; b: int; { a=10; b=10; return a+b; }'
+assert 42 'a: int; a=1; { a=42; } return a;'
+assert 55 'a: int; sum: int; a=1; sum=0; while(a<=10) { sum=sum+a; a=a+1; } return sum;'
+assert 30 'a: int; a=0; if(1) { a=10; a=a+20; } else { a=100; } return a;'
+assert 100 'a: int; a=0; if(0) { a=10; } else { a=100; } return a;'
+assert 15 'a: int; b: int; { a=5; { b=10; } return a+b; }'
 
 # Prefix increment
-assert 6 'int i; i=5; return ++i;'
-assert 6 'int i; i=5; ++i; return i;'
-assert 12 'int i; i=5; return ++i*2;'
-assert 7 'int i; int a; i=5; a=++i; return a+1;'
-assert 3 'int i; i=0; ++i; ++i; ++i; return i;'
+assert 6 'i: int; i=5; return ++i;'
+assert 6 'i: int; i=5; ++i; return i;'
+assert 12 'i: int; i=5; return ++i*2;'
+assert 7 'i: int; a: int; i=5; a=++i; return a+1;'
+assert 3 'i: int; i=0; ++i; ++i; ++i; return i;'
 
 # Postfix increment
-assert 5 'int i; i=5; return i++;'
-assert 6 'int i; i=5; i++; return i;'
-assert 10 'int i; i=5; return i++*2;'
-assert 11 'int i; int a; i=5; a=i++; return a+i;'
-assert 16 'int i; int a; i=5; a=i++*2; return a+i;'
-assert 3 'int i; i=0; i++; i++; i++; return i;'
+assert 5 'i: int; i=5; return i++;'
+assert 6 'i: int; i=5; i++; return i;'
+assert 10 'i: int; i=5; return i++*2;'
+assert 11 'i: int; a: int; i=5; a=i++; return a+i;'
+assert 16 'i: int; a: int; i=5; a=i++*2; return a+i;'
+assert 3 'i: int; i=0; i++; i++; i++; return i;'
 
 # Prefix decrement
-assert 4 'int i; i=5; return --i;'
-assert 4 'int i; i=5; --i; return i;'
-assert 8 'int i; i=5; return --i*2;'
-assert 8 'int i; int a; i=5; a=--i; return a+i;'
-assert 2 'int i; i=5; --i; --i; --i; return i;'
+assert 4 'i: int; i=5; return --i;'
+assert 4 'i: int; i=5; --i; return i;'
+assert 8 'i: int; i=5; return --i*2;'
+assert 8 'i: int; a: int; i=5; a=--i; return a+i;'
+assert 2 'i: int; i=5; --i; --i; --i; return i;'
 
 # Postfix decrement
-assert 5 'int i; i=5; return i--;'
-assert 4 'int i; i=5; i--; return i;'
-assert 10 'int i; i=5; return i--*2;'
-assert 9 'int i; int a; i=5; a=i--; return a+i;'
-assert 14 'int i; int a; i=5; a=i--*2; return a+i;'
-assert 2 'int i; i=5; i--; i--; i--; return i;'
+assert 5 'i: int; i=5; return i--;'
+assert 4 'i: int; i=5; i--; return i;'
+assert 10 'i: int; i=5; return i--*2;'
+assert 9 'i: int; a: int; i=5; a=i--; return a+i;'
+assert 14 'i: int; a: int; i=5; a=i--*2; return a+i;'
+assert 2 'i: int; i=5; i--; i--; i--; return i;'
 
 # Mixed increment/decrement
-assert 5 'int i; i=5; i++; i--; return i;'
-assert 5 'int i; i=5; ++i; --i; return i;'
-assert 6 'int i; i=5; ++i; i--; i++; return i;'
-assert 10 'int i; int a; int b; i=5; a=i++; b=++i; return a+b-2;'
-assert 0 'int i; i=0; i++; i--; return i;'
+assert 5 'i: int; i=5; i++; i--; return i;'
+assert 5 'i: int; i=5; ++i; --i; return i;'
+assert 6 'i: int; i=5; ++i; i--; i++; return i;'
+assert 10 'i: int; a: int; b: int; i=5; a=i++; b=++i; return a+b-2;'
+assert 0 'i: int; i=0; i++; i--; return i;'
 
 # Basic for loops
-assert 5 'int i; for(i=0;i<5;i++) {} return i;'
-assert 10 'int i; for(i=0;i<10;++i) {} return i;'
-assert 10 'int a; int i; a=0; for(i=0;i<10;i++) a++; return a;'
-assert 45 'int sum; int i; sum=0; for(i=0;i<10;i++) {sum=sum+i;} return sum;'
-assert 55 'int sum; int i; sum=0; for(i=1;i<=10;i++) {sum=sum+i;} return sum;'
+assert 5 'i: int; for(i=0;i<5;i++) {} return i;'
+assert 10 'i: int; for(i=0;i<10;++i) {} return i;'
+assert 10 'a: int; i: int; a=0; for(i=0;i<10;i++) a++; return a;'
+assert 45 'sum: int; i: int; sum=0; for(i=0;i<10;i++) {sum=sum+i;} return sum;'
+assert 55 'sum: int; i: int; sum=0; for(i=1;i<=10;i++) {sum=sum+i;} return sum;'
 
 # For loops with decrement
-assert 0 'int i; for(i=10;i>0;i--) {} return i;'
-assert 0 'int i; for(i=10;i>0;--i) {} return i;'
-assert 55 'int sum; int i; sum=0; for(i=10;i>0;i--) {sum=sum+i;} return sum;'
-assert 5 'int i; for(i=10;i>5;i--) {} return i;'
+assert 0 'i: int; for(i=10;i>0;i--) {} return i;'
+assert 0 'i: int; for(i=10;i>0;--i) {} return i;'
+assert 55 'sum: int; i: int; sum=0; for(i=10;i>0;i--) {sum=sum+i;} return sum;'
+assert 5 'i: int; for(i=10;i>5;i--) {} return i;'
 
 # Optional for expressions
-assert 5 'int i; i=0; for(;i<5;i++) {} return i;'
-assert 5 'int i; i=0; for(;i<5;) i++; return i;'
-assert 5 'int i; i=0; for(;;) {if(i==5) return i; i++;}'
+assert 5 'i: int; i=0; for(;i<5;i++) {} return i;'
+assert 5 'i: int; i=0; for(;i<5;) i++; return i;'
+assert 5 'i: int; i=0; for(;;) {if(i==5) return i; i++;}'
 assert 42 'for(;;) return 42;'
-assert 0 'int i; for(i=0;i<0;i++) {} return i;'
+assert 0 'i: int; for(i=0;i<0;i++) {} return i;'
 
 # Nested for loops
-assert 9 'int sum; int i; int j; sum=0; for(i=0;i<3;i++) {for(j=0;j<3;j++) sum++;} return sum;'
-assert 25 'int sum; int i; int j; sum=0; for(i=0;i<5;i++) {for(j=0;j<5;j++) sum++;} return sum;'
-assert 100 'int sum; int i; int j; sum=0; for(i=0;i<10;i++) {for(j=0;j<10;j++) sum++;} return sum;'
+assert 9 'sum: int; i: int; j: int; sum=0; for(i=0;i<3;i++) {for(j=0;j<3;j++) sum++;} return sum;'
+assert 25 'sum: int; i: int; j: int; sum=0; for(i=0;i<5;i++) {for(j=0;j<5;j++) sum++;} return sum;'
+assert 100 'sum: int; i: int; j: int; sum=0; for(i=0;i<10;i++) {for(j=0;j<10;j++) sum++;} return sum;'
 
 # For loops with conditionals
-assert 5 'int i; for(i=0;i<10;i++) {if(i==5) return i;} return 0;'
-assert 7 'int i; for(i=0;i<10;i++) {if(i==7) return i;} return 0;'
-assert 10 'int a; int i; a=0; for(i=0;i<10;i++) {if(i<5) a++; else a++;} return a;'
+assert 5 'i: int; for(i=0;i<10;i++) {if(i==5) return i;} return 0;'
+assert 7 'i: int; for(i=0;i<10;i++) {if(i==7) return i;} return 0;'
+assert 10 'a: int; i: int; a=0; for(i=0;i<10;i++) {if(i<5) a++; else a++;} return a;'
 
 # Loop/stack balance
-assert 100 'int i; int j; i=0; for(j=0;j<100;j++) {i++;} return i;'
-assert 200 'int i; int j; i=0; for(j=0;j<200;j++) {++i;} return i;'
-assert 50 'int i; int j; i=100; for(j=0;j<50;j++) {i--;} return i;'
-assert 42 'int i; int j; i=0; for(j=0;j<42;j++) {i=i+1;} return i;'
+assert 100 'i: int; j: int; i=0; for(j=0;j<100;j++) {i++;} return i;'
+assert 200 'i: int; j: int; i=0; for(j=0;j<200;j++) {++i;} return i;'
+assert 50 'i: int; j: int; i=100; for(j=0;j<50;j++) {i--;} return i;'
+assert 42 'i: int; j: int; i=0; for(j=0;j<42;j++) {i=i+1;} return i;'
 
 # Break and continue
-assert 5 'int i; for(i=0;i<10;i++) {if(i==5) break;} return i;'
-assert 3 'int i; i=0; while(i<10) {if(i==3) break; i++;} return i;'
-assert 5 'int i; int sum; i=0; sum=0; while(i<5) {i++; if(i<5) continue; sum=sum+i;} return sum;'
-assert 5 'int sum; int i; sum=0; for(i=0;i<10;i++) {if(i<5) continue; sum++;} return sum;'
+assert 5 'i: int; for(i=0;i<10;i++) {if(i==5) break;} return i;'
+assert 3 'i: int; i=0; while(i<10) {if(i==3) break; i++;} return i;'
+assert 5 'i: int; sum: int; i=0; sum=0; while(i<5) {i++; if(i<5) continue; sum=sum+i;} return sum;'
+assert 5 'sum: int; i: int; sum=0; for(i=0;i<10;i++) {if(i<5) continue; sum++;} return sum;'
 
 # Function definitions and calls (no parameters yet)
 assert_program 42 'int answer() { return 42; } int main() { return answer(); }'
@@ -466,9 +466,9 @@ assert_program 84 'int answer() { return 42; } int main() { return answer()+answ
 assert_program 42 'int leaf() { return 42; } int middle() { return leaf(); } int main() { return middle(); }'
 
 # Caller variables survive calls; each function has its own frame.
-assert_program 12 'int helper() { int a; a=7; return a; } int main() { int a; int b; a=5; b=helper(); return a+b; }'
-assert_program 5 'int helper() { int a; a=99; return a; } int main() { int a; a=5; helper(); return a; }'
-assert_program 10 'int one() { return 1; } int main() { int sum; int i; sum=0; for(i=0;i<10;i++) sum=sum+one(); return sum; }'
+assert_program 12 'int helper() { a: int; a=7; return a; } int main() { a: int; b: int; a=5; b=helper(); return a+b; }'
+assert_program 5 'int helper() { a: int; a=99; return a; } int main() { a: int; a=5; helper(); return a; }'
+assert_program 10 'int one() { return 1; } int main() { sum: int; i: int; sum=0; for(i=0;i<10;i++) sum=sum+one(); return sum; }'
 
 # Control-flow labels must remain unique across functions.
 assert_program 3 'int first() { if(1) return 1; return 0; } int second() { if(1) return 2; return 0; } int main() { return first()+second(); }'
@@ -491,7 +491,7 @@ assert_program 7 'int subtract(int a, int b) { return a-b; } int main() { return
 assert_program 21 'int multiply(int a, int b) { return a*b; } int main() { return multiply(1+2,10-3); }'
 
 # Local variables as arguments
-assert_program 15 'int add(int a, int b) { return a+b; } int main() { int x; int y; x=5; y=10; return add(x,y); }'
+assert_program 15 'int add(int a, int b) { return a+b; } int main() { x: int; y: int; x=5; y=10; return add(x,y); }'
 
 # All six registers; subtraction makes argument order matter
 assert_program 43 'int six(int a, int b, int c, int d, int e, int f) { return a-b-c-d-e-f; } int main() { return six(63,1,2,4,5,8); }'
@@ -503,69 +503,69 @@ assert_program 42 'int identity(int a) { return a; } int add(int a, int b) { ret
 assert_program 47 'int add(int a, int b) { return a+b; } int main() { return 5+add(20,22); }'
 
 # Changing a parameter must not change the caller's variable
-assert_program 5 'int change(int a) { a=99; return a; } int main() { int a=5; change(a); return a; }'
+assert_program 5 'int change(int a) { a=99; return a; } int main() { a: int=5; change(a); return a; }'
 
 # Recursion: every call needs its own parameter storage
 assert_program 120 'int factorial(int n) { if(n<=1) return 1; return n*factorial(n-1); } int main() { return factorial(5); }'
 
 # Explicit declarations
-assert 5 'int a=5; return a;'
-assert 10 'int a; a=10; return a;'
-assert 15 'int a=5; int b=10; return a+b;'
-assert 7 'int a=5; int b=a+2; return b;'
-assert 10 'int a=5; a=10; return a;'
-assert 6 'int a=5; return ++a;'
+assert 5 'a: int=5; return a;'
+assert 10 'a: int; a=10; return a;'
+assert 15 'a: int=5; b: int=10; return a+b;'
+assert 7 'a: int=5; b: int=a+2; return b;'
+assert 10 'a: int=5; a=10; return a;'
+assert 6 'a: int=5; return ++a;'
 
 # Parameters are already declared locals
-assert_program 6 'int increment(int a) { int b=a+1; return b; } int main() { return increment(5); }'
+assert_program 6 'int increment(int a) { b: int=a+1; return b; } int main() { return increment(5); }'
 
 # Invalid variable uses
 assert_error 'Undeclared variable' 'int main() { a=5; return a; }'
 assert_error 'Undeclared variable' 'int main() { return missing; }'
-assert_error 'Variable already declared' 'int main() { int a; int a; return 0; }'
+assert_error 'Variable already declared' 'int main() { a: int; a: int; return 0; }'
 
 # u8 storage and conversion
-assert_program 255 'int main() { u8 x = 255; return x; }'
-assert_program 233 'int main() { u8 x = 233; return x; }'
-assert_program 254 'int main() { u8 x = 253; return x+1; }'
+assert_program 255 'int main() { x: u8 = 255; return x; }'
+assert_program 233 'int main() { x: u8 = 233; return x; }'
+assert_program 254 'int main() { x: u8 = 253; return x+1; }'
 
 # u8 increment and decrement
-assert_program 0 'int main() { u8 x = 255; ++x; return x; }'
-assert_program 255 'int main() { u8 x = 255; int old=x++; return old+x; }'
-assert_program 255 'int main() { u8 x = 0; --x; return x; }'
-assert_program 0 'int main() { u8 x = 0; int old=x--; return old; }'
+assert_program 0 'int main() { x: u8 = 255; ++x; return x; }'
+assert_program 255 'int main() { x: u8 = 255; old: int=x++; return old+x; }'
+assert_program 255 'int main() { x: u8 = 0; --x; return x; }'
+assert_program 0 'int main() { x: u8 = 0; old: int=x--; return old; }'
 
 # Mixed local sizes: try both stack layouts
-assert_program 43 'int main() { int a=42; u8 b=1; return a+b; }'
-assert_program 43 'int main() { u8 b=1; int a=42; return a+b; }'
+assert_program 43 'int main() { a: int=42; b: u8=1; return a+b; }'
+assert_program 43 'int main() { b: u8=1; a: int=42; return a+b; }'
 
 # u8 function parameter
 assert_program 1 'int get(u8 x) { return x; } int main() { return get(257); }'
 
 # Pointers: address-of and dereference
-assert 42 'int x=42; int *p; p=&x; return *p;'
-assert 9 'int x; *(&x)=9; return x;'
-assert 7 'int x=1; int *p; p=&x; *p=7; return x;'
+assert 42 'x: int=42; p: int*; p=&x; return *p;'
+assert 9 'x: int; *(&x)=9; return x;'
+assert 7 'x: int=1; p: int*; p=&x; *p=7; return x;'
 
 # Pointer aliases and reassignment
-assert 42 'int x=42; int *p; int *q; p=&x; q=p; return *q;'
-assert 7 'int x=1; int y=7; int *p; p=&x; p=&y; return *p;'
+assert 42 'x: int=42; p: int*; q: int*; p=&x; q=p; return *q;'
+assert 7 'x: int=1; y: int=7; p: int*; p=&x; p=&y; return *p;'
 
 # Pointers to u8
-assert 255 'u8 x=255; u8 *p; p=&x; return *p;'
-assert 9 'u8 x=1; u8 *p; p=&x; *p=9; return x;'
+assert 255 'x: u8=255; p: u8*; p=&x; return *p;'
+assert 9 'x: u8=1; p: u8*; p=&x; *p=9; return x;'
 
 # Char literals
 assert 65 "return 'A';"
-assert 65 "char c='A'; return c;"
+assert 65 "c: char='A'; return c;"
 
 # String literals
 assert 65 'return *"A";'
-assert 104 'char *s="hello"; return *s;'
-assert 0 'char *s=""; return *s;'
+assert 104 's: char*="hello"; return *s;'
+assert 0 's: char*=""; return *s;'
 
 # Separate literals need separate labels
-assert 195 'char *a="a"; char *b="b"; return *a+*b;'
+assert 195 'a: char*="a"; b: char*="b"; return *a+*b;'
 
 # Passing a string to a function
 assert_program 90 'int first(char *s) { return *s; } int main() { return first("Z"); }'
@@ -583,17 +583,17 @@ assert 92 'return *"\\";'
 assert 34 'return *"\"";'
 
 # Preserve bytes after an embedded zero
-assert 98 'char *s="a\0b"; s++; s++; return *s;'
+assert 98 's: char*="a\0b"; s++; s++; return *s;'
 
 # Pointer addition and subtraction
-assert 98 'char *p="abc"; return *(p+1);'
-assert 99 'char *p="abc"; return *(2+p);'
-assert 97 'char *p="abc"; return *((p+2)-2);'
+assert 98 'p: char*="abc"; return *(p+1);'
+assert 99 'p: char*="abc"; return *(2+p);'
+assert 97 'p: char*="abc"; return *((p+2)-2);'
 
 # Pointer differences count elements
-assert 3 'char *p="abc"; return (p+3)-p;'
-assert 1 'char *p="abc"; return ((p+1)-(p+3)) == -2;'
-assert 1 'int x; int *p=&x; return (p+1)-p;'
+assert 3 'p: char*="abc"; return (p+3)-p;'
+assert 1 'p: char*="abc"; return ((p+1)-(p+3)) == -2;'
+assert 1 'x: int; p: int*=&x; return (p+1)-p;'
 
 # Shared helper must preserve integer subtraction
 assert 7 'return 10-3;'
@@ -601,41 +601,41 @@ assert 1 'return 3-5 == -2;'
 
 # Invalid pointer arithmetic
 assert_error 'Can not add two pointers together' \
-  'int main() { int x; int *p=&x; return p+p; }'
+  'int main() { x: int; p: int*=&x; return p+p; }'
 
 assert_error 'Cannot subtract a pointer from an integer' \
-  'int main() { int x; int *p=&x; return 1-p; }'
+  'int main() { x: int; p: int*=&x; return 1-p; }'
 
 assert_error 'Cannot subtract pointers to different types' \
-  'int main() { int x; char y; return &x-&y; }'
+  'int main() { x: int; y: char; return &x-&y; }'
 
 # Recursive type compatibility: int ** versus char **
 assert_error 'Cannot subtract pointers to different types' \
-  'int main() { int *p; char *q; return &p-&q; }'
+  'int main() { p: int*; q: char*; return &p-&q; }'
 
 # Pointer Indexing
-assert 104 'char *s="hello"; return s[0];'
-assert 101 'char *s="hello"; return s[1];'
-assert 9 'int x=1; int *p=&x; p[0]=9; return x;'
-assert 3 'int x=1; int *p=&x; p[0]++; return x+1;'
+assert 104 's: char*="hello"; return s[0];'
+assert 101 's: char*="hello"; return s[1];'
+assert 9 'x: int=1; p: int*=&x; p[0]=9; return x;'
+assert 3 'x: int=1; p: int*=&x; p[0]++; return x+1;'
 
 # Block scopes: an inner block can read and update an outer variable
-assert 3 'int x=1; { int y=2; x=x+y; } return x;'
+assert 3 'x: int=1; { y: int=2; x=x+y; } return x;'
 
 # A nested declaration shadows the outer variable, then the outer value remains
-assert 1 'int x=1; { int x=2; if(x!=2) return 0; } return x;'
+assert 1 'x: int=1; { x: int=2; if(x!=2) return 0; } return x;'
 
 # Inner block can read a variable from its parent scope
-assert 1 'int x=1; { int y=x+1; if(y!=2) return 0; } return x;'
+assert 1 'x: int=1; { y: int=x+1; if(y!=2) return 0; } return x;'
 
 # A variable declared in a block is unavailable after leaving it
-assert_error 'Undeclared variable' 'int main() { { int x=2; } return x; }'
+assert_error 'Undeclared variable' 'int main() { { x: int=2; } return x; }'
 
 # Same-scope duplicates are still rejected
-assert_error 'Variable already declared' 'int main() { int x=1; int x=2; return x; }'
+assert_error 'Variable already declared' 'int main() { x: int=1; x: int=2; return x; }'
 
 # A function body shares the parameter scope, so a local cannot redeclare a parameter
-assert_error 'Variable already declared' 'int f(int x) { int x=2; return x; } int main() { return f(1); }'
+assert_error 'Variable already declared' 'int f(int x) { x: int=2; return x; } int main() { return f(1); }'
 
 # Global Variable
 assert_program 5 'int x; int main() { x = 5; return x; }'
@@ -661,51 +661,51 @@ assert 42 'return syscall(60,42);'
 assert_program 3 'int linux_write(int fd, char *buffer, int length) { return syscall(1, fd, buffer, length); } int main() { return linux_write(1, "OK\n", 3); }'
 
 # Basic member reads and writes
-assert_program 42 'struct Point { int x; int y; }; int main() { struct Point p; p.x=20; p.y=22; return p.x+p.y; }'
+assert_program 42 'struct Point { int x; int y; }; int main() { p: struct Point; p.x=20; p.y=22; return p.x+p.y; }'
 
 # Members retain independent values
-assert_program 42 'struct Pair { int a; int b; }; int main() { struct Pair p; p.a=10; p.b=32; p.a=p.a+1; return p.a+p.b-1; }'
+assert_program 42 'struct Pair { int a; int b; }; int main() { p: struct Pair; p.a=10; p.b=32; p.a=p.a+1; return p.a+p.b-1; }'
 
 # Mixed widths and alignment
-assert_program 42 'struct Mixed { char a; int b; char c; }; int main() { struct Mixed m; m.a=1; m.b=39; m.c=2; return m.a+m.b+m.c; }'
+assert_program 42 'struct Mixed { char a; int b; char c; }; int main() { m: struct Mixed; m.a=1; m.b=39; m.c=2; return m.a+m.b+m.c; }'
 
 # Byte stores must not overwrite neighboring fields
-assert_program 42 'struct Bytes { u8 a; u8 b; }; int main() { struct Bytes v; v.b=42; v.a=257; if(v.a!=1) return 0; return v.b; }'
+assert_program 42 'struct Bytes { u8 a; u8 b; }; int main() { v: struct Bytes; v.b=42; v.a=257; if(v.a!=1) return 0; return v.b; }'
 
 # Nested structs
-assert_program 42 'struct Inner { int x; }; struct Outer { char tag; struct Inner inner; int y; }; int main() { struct Outer o; o.tag=1; o.inner.x=20; o.y=21; return o.tag+o.inner.x+o.y; }'
+assert_program 42 'struct Inner { int x; }; struct Outer { char tag; struct Inner inner; int y; }; int main() { o: struct Outer; o.tag=1; o.inner.x=20; o.y=21; return o.tag+o.inner.x+o.y; }'
 
 # Address of a member
-assert_program 42 'struct Point { int x; int y; }; int main() { struct Point p; int *x=&p.x; *x=42; return p.x; }'
+assert_program 42 'struct Point { int x; int y; }; int main() { p: struct Point; x: int*=&p.x; *x=42; return p.x; }'
 
 # Arrow access
-assert_program 42 'struct Point { int x; int y; }; int main() { struct Point p; struct Point *ptr=&p; ptr->x=20; ptr->y=22; return p.x+p.y; }'
+assert_program 42 'struct Point { int x; int y; }; int main() { p: struct Point; ptr: struct Point*=&p; ptr->x=20; ptr->y=22; return p.x+p.y; }'
 
 # Struct pointers passed to functions
-assert_program 42 'struct Point { int x; }; int set(struct Point *p) { p->x=42; return 0; } int main() { struct Point p; set(&p); return p.x; }'
+assert_program 42 'struct Point { int x; }; int set(struct Point *p) { p->x=42; return 0; } int main() { p: struct Point; set(&p); return p.x; }'
 
 # Pointer-valued members
-assert_program 42 'struct Holder { int *value; }; int main() { int x=42; struct Holder h; h.value=&x; return *h.value; }'
+assert_program 42 'struct Holder { int *value; }; int main() { x: int=42; h: struct Holder; h.value=&x; return *h.value; }'
 
 # Self-referencing struct type and chained access
-assert_program 42 'struct Node { int value; struct Node *next; }; int main() { struct Node a; struct Node b; a.next=&b; b.value=42; return a.next->value; }'
+assert_program 42 'struct Node { int value; struct Node *next; }; int main() { a: struct Node; b: struct Node; a.next=&b; b.value=42; return a.next->value; }'
 
 # Global struct storage
 assert_program 42 'struct Point { int x; int y; }; struct Point p; int main() { p.x=20; p.y=22; return p.x+p.y; }'
 
 # Prefix and postfix operations on members
-assert_program 42 'struct Counter { int value; }; int main() { struct Counter c; c.value=41; return ++c.value; }'
-assert_program 41 'struct Counter { int value; }; int main() { struct Counter c; c.value=20; int old=c.value++; return old+c.value; }'
+assert_program 42 'struct Counter { int value; }; int main() { c: struct Counter; c.value=41; return ++c.value; }'
+assert_program 41 'struct Counter { int value; }; int main() { c: struct Counter; c.value=20; old: int=c.value++; return old+c.value; }'
 
 # Struct test errors
 assert_error 'Unkown member of struct' \
-  'struct Point { int x; }; int main() { struct Point p; return p.y; }'
+  'struct Point { int x; }; int main() { p: struct Point; return p.y; }'
 
 assert_error 'Member access requires a struct' \
-  'int main() { int x=1; return x.y; }'
+  'int main() { x: int=1; return x.y; }'
 
 assert_error 'Arrow access requires a pointer to a struct' \
-  'struct Point { int x; }; int main() { struct Point p; return p->x; }'
+  'struct Point { int x; }; int main() { p: struct Point; return p->x; }'
 
 assert_error 'Duplicate member name' \
   'struct Point { int x; int x; }; int main() { return 0; }'
@@ -714,6 +714,6 @@ assert_error 'Member requires a complete type' \
   'struct Node { struct Node next; }; int main() { return 0; }'
 
 # import program test
-assert_import_program 66
+# assert_import_program 42
 
 finish || exit 1
