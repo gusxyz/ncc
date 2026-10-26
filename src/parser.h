@@ -146,7 +146,7 @@ LocalVariable *new_local_variable(Token *token, Type *type);
 void parse();
 void parse_source(Program *program, const char *source_path);
 void parse_function_bodies(Program *program);
-Node *parse_decleration(Type *type);
+Node *parse_decleration();
 Node *statement();
 Node *expression();
 Node *assign();

@@ -1,5 +1,5 @@
 int main() {
-  return *message() + counter;
+  x: int = 42;
+  p: int* = &x;
+  return *p;
 }
-
-#import "answer.nl"

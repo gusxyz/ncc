@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <error.h>
+#include <token.h>
 
 char *user_input;
 
@@ -30,4 +31,16 @@ void error_at(char *loc, char *fmt, ...)
   exit(1);
 }
 
+void expect(char op) {
+  if(global_token->kind != TOKEN_RESERVED || global_token->string[0] != op)
+    error_at(global_token->string, "Expected '%c'", op);
+  advance_tokenizer();
+}
 
+int expect_number() {
+  if(global_token->kind != TOKEN_NUMBER)
+    error("Expected a number, got token kind %d, character '%c'",global_token->kind, global_token->string[0]);
+  int val = global_token->value;
+  advance_tokenizer();
+  return val;
+}

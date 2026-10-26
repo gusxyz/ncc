@@ -456,24 +456,26 @@ Node *parse_for() {
     return node;
 }
 
-Node *parse_decleration(Type *type) { 
+Node *parse_decleration() { 
   Token *name = consume_identifier();
-  
   if(!name)
     error_at(global_token->string, "Expected a variable name");
+  
+  expect(':');
+  Type *type = parse_type();
 
   if(find_lvar_in_scope(name))
     error_at(global_token->string, "Variable already declared");
 
   LocalVariable *variable = new_local_variable(name, type);
-
   Node *block = new_node(NODE_BLOCK, NULL, NULL);
   
   if(consume("=")) {
-    Node *left = new_node_local_variable(variable);
-    Node *right = assign();
+    Node *init = new_node(NODE_ASSIGN, 
+                new_node_local_variable(variable),
+               assign());
 
-    Node *init = new_node(NODE_ASSIGN, left, right);
+    init->type = type;
     da_append(&block->body, init);
   }
 
@@ -481,11 +483,20 @@ Node *parse_decleration(Type *type) {
   return block;
 }
 
+bool is_decleration() {
+  if(global_token->kind == TOKEN_IDENTIFIER && 
+    global_token->next_token &&
+    global_token->next_token->kind == TOKEN_RESERVED &&
+    global_token->next_token->length == 1 &&
+    global_token->next_token->string[0] == ':')
+      return true;
+  else
+    return false;
+}
+
 Node *statement() {
   Node *node;
 
-  if(is_type_start())
-    return parse_decleration(parse_type());
   if (consume_kind(TOKEN_IF))
     return parse_if();
   if (consume_kind(TOKEN_WHILE))
@@ -503,6 +514,10 @@ Node *statement() {
 
   if (global_token->kind == TOKEN_RESERVED && global_token->string[0] == '{')
     return parse_block();
+
+  if (is_decleration())
+    return parse_decleration();
+
 
   if (consume_kind(TOKEN_RETURN)) {
     node = calloc(1, sizeof(Node));

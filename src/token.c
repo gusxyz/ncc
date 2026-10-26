@@ -14,12 +14,13 @@ void advance_tokenizer() {
 
 static const char *operators[] = {
     "==", "!=", "<=", ">=",
+    ":=", "::",
     "++", "--", "->",
     "+", "-", "*", "/", "&",
     "(", ")", 
     "[","]",
     "<", ">",
-    "=", ";", 
+    "=", ";", ":",
     "{", "}", 
     ",", "."
 };
@@ -56,21 +57,6 @@ Token *consume_identifier() {
   Token *token = global_token;
   advance_tokenizer();
   return token;
-}
-
-// error if next token isnt expected token
-void expect(char op) {
-  if(global_token->kind != TOKEN_RESERVED || global_token->string[0] != op)
-    error("Expected '%c'", op);
-  advance_tokenizer();
-}
-
-int expect_number() {
-  if(global_token->kind != TOKEN_NUMBER)
-    error("Expected a number, got token kind %d, character '%c'",global_token->kind, global_token->string[0]);
-  int val = global_token->value;
-  advance_tokenizer();
-  return val;
 }
 
 bool at_eof() {
