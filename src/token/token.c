@@ -23,7 +23,7 @@ static const char *operators[] = {
     "<", ">",
     "=", ";", ":",
     "{", "}", 
-    ",", "."
+    ",", "."/*  */
 };
 
 static const Keyword keywords[] = {
@@ -38,6 +38,7 @@ static const Keyword keywords[] = {
   {"break",    TOKEN_BREAK},
   {"continue", TOKEN_CONTINUE},
   {"struct", TOKEN_STRUCT},
+  {"sizeof", TOKEN_SIZEOF},
 };
 
 // if next token is the expected symbol advance and return true

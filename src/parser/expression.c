@@ -1,4 +1,5 @@
 #include "ast/ast.h"
+#include "token/token.h"
 #include "type/type.h"
 #include <parser/parser_internal.h>
 
@@ -101,6 +102,26 @@ static Node *multiply() {
 }
 
 static Node *unary() {
+  if(consume_kind(TOKEN_SIZEOF)) {
+    Type *type;
+
+    if(consume("(")) {
+      if(is_type_start())
+        type = parse_type();
+      else
+       type = expression()->type;
+
+      expect(')');
+    } else {
+      type = unary()->type;
+    }
+
+    if(!type || type->size <= 0)
+      error_at(global_token->string, "sizeof requires a complete type.");
+
+    return new_node_number(type->size);
+  }
+
   if (consume("!")) {
     Node * node = new_node(NODE_LOGICAL_NOT, unary(), NULL);
     node->type = type_int;
@@ -137,6 +158,7 @@ static Node *unary() {
     node->type = pointer_to(operand->type);
     return node;
   }
+  
   return postfix();
 }
 

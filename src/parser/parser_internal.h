@@ -52,6 +52,7 @@ LocalVariable *new_local_variable(Token *token, Type *type);
 bool is_decleration();
 Type *parse_type();
 Node *parse_decleration();
+bool is_type_start();
 
 // Statements
 Node *parse_statement();

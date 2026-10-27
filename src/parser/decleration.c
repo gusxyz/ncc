@@ -38,7 +38,7 @@ bool is_decleration() {
          (next->length == 2 && memcmp(next->string, "::", 2) == 0);
 }
 
-static bool is_type_start() {
+bool is_type_start() {
   switch (global_token->kind) {
   case TOKEN_INT:
   case TOKEN_U8:
