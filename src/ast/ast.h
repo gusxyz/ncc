@@ -40,6 +40,7 @@ typedef enum {
   NODE_LOGICAL_NOT,
   NODE_LOGICAL_AND,
   NODE_LOGICAL_OR,
+  NODE_CAST,
 } NodeKind;
 
 typedef struct Node Node;

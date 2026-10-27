@@ -12,6 +12,7 @@ static Node *equality();
 static Node *relational();
 static Node *add();
 static Node *multiply();
+static Node* cast();
 static Node *unary();
 static Node *postfix();
 static Node *primary();
@@ -89,16 +90,32 @@ static Node *add() {
   }
 }
 
-static Node *multiply() {
-  Node *node = unary();
+static Node *multiply() {  
+  Node *node = cast();
   for (;;) {
     if (consume("*")) {
-      node = new_node(NODE_MULTIPLY, node, unary());
+      node = new_node(NODE_MULTIPLY, node, cast());
     } else if (consume("/")) {
-      node = new_node(NODE_DIVIDE, node, unary());
+      node = new_node(NODE_DIVIDE, node, cast());
     } else
       return node;
   }
+}
+
+static Node* cast() {
+  Token *start = global_token;
+  if(consume(("("))) {
+    if(is_type_start()) {
+      Type *type = parse_type();
+      expect(')');
+      Node * node = new_node(NODE_CAST, cast(), node);
+      node->type = type;
+      return node;
+    }
+
+    set_token(start);
+  }
+  return unary();
 }
 
 static Node *unary() {
@@ -158,7 +175,7 @@ static Node *unary() {
     node->type = pointer_to(operand->type);
     return node;
   }
-  
+
   return postfix();
 }
 

@@ -322,6 +322,15 @@ void generate_expression(Node *node) {
   case NODE_FUNCTION_CALL:
     generate_function_call(node);
     return;
+  case NODE_CAST:
+    generate_expression(node->left_hand_side);
+    emit("pop rax");
+
+    if(node->type->kind == TYPE_U8)
+      emit("movzx rax, al");
+
+    emit("push rax");
+    return;
   case NODE_LOCAL_VARIABLE:
   case NODE_GLOBAL_VARIABLE:
     generate_lvalue_address(node);
@@ -492,7 +501,7 @@ void generate_for(Node *node) {
   continue_label = id;
   if (node->init)
     generate_statement(node->init);
-  
+
   emit_label(".L.loop.%d", id);
   if(node->condition) {
     generate_expression(node->condition);

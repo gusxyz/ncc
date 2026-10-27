@@ -101,7 +101,14 @@ int evaluate_constant(Node *node) {
   switch (node->kind) {
   case NODE_NUMBER:
     return node->value;
-  case NODE_ADD:
+  case NODE_CAST: {
+    int value = evaluate_constant(node->left_hand_side);
+
+    if (node->type->kind == TYPE_U8)
+      return (unsigned char) value;
+
+    return value;
+}  case NODE_ADD:
     return evaluate_constant(node->left_hand_side) +
            evaluate_constant(node->right_hand_side);
   case NODE_SUBTRACT:
