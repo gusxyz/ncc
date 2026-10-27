@@ -174,6 +174,12 @@ Type *parse_type() {
   while (consume("*"))
     type = pointer_to(type);
 
+  while (consume("[")){
+    int length = expect_number();
+    expect(']');
+    type = array_of(type, length);
+  }
+
   return type;
 }
 

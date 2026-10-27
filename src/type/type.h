@@ -8,14 +8,15 @@ typedef enum {
     TYPE_INT,
     TYPE_POINTER,
     TYPE_STRUCT,
-    TYPE_U8, // lmfao i think this is just i8 rn ngl dont think we have signdness
-    //TYPE_U8,
-    //TYPE_I8
-    //TYPE_I16,
-    //TYPE_U16,
-    //TYPE_I32,
-    //TYPE_U32,
-    //TYPE_I64,
+    TYPE_ARRAY,
+    TYPE_I8,
+    TYPE_U8,
+    TYPE_I16,
+    TYPE_U16,
+    TYPE_I32,
+    TYPE_U32,
+    TYPE_I64,
+    TYPE_U64,
 } TypeKind;
 
 typedef struct Type Type;
@@ -27,7 +28,10 @@ struct Type {
     int alignment;
     Type *base;
     StructMember *members;
+    int array_length;
 };
+
+Type *array_of(Type *base, int length);
 
 struct StructMember {
     StructMember *next;

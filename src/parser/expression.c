@@ -144,7 +144,7 @@ static Node *parse_index(Node *node) {
   Node *index = expression();
   expect(']');
 
-  if (node->type->kind != TYPE_POINTER)
+  if (node->type->kind != TYPE_POINTER && node->type->kind != TYPE_ARRAY)
     error("Attempted to index a non pointer");
 
   Node *add = new_additive_node(NODE_ADD, node, index);

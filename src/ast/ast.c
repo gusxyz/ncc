@@ -1,3 +1,4 @@
+#include "type/type.h"
 #include <ast/ast.h>
 #include <error/error.h>
 
@@ -49,10 +50,10 @@ Node *new_node_local_variable(LocalVariable *local_var) {
 Node *new_additive_node(NodeKind kind, Node *left, Node *right) {
   TypeKind left_kind = left->type->kind;
   TypeKind right_kind = right->type->kind;
-  bool left_integer = left_kind == TYPE_INT || left_kind == TYPE_U8;
-  bool right_integer = right_kind == TYPE_INT || right_kind == TYPE_U8;
-  bool left_pointer = left_kind == TYPE_POINTER;
-  bool right_pointer = right_kind == TYPE_POINTER;
+  bool left_integer = left_kind == TYPE_INT || left_kind == TYPE_U8 || left_kind == TYPE_I64;
+  bool right_integer = right_kind == TYPE_INT || right_kind == TYPE_U8 || right_kind == TYPE_I64;
+  bool left_pointer = left_kind == TYPE_POINTER || left_kind == TYPE_ARRAY;
+  bool right_pointer = right_kind == TYPE_POINTER || right_kind == TYPE_ARRAY;
 
   if (left_integer && right_integer) {
     Node *node = new_node(kind, left, right);
@@ -66,7 +67,7 @@ Node *new_additive_node(NodeKind kind, Node *left, Node *right) {
     scaled->type = type_int;
 
     Node *node = new_node(kind, left, scaled);
-    node->type = left->type;
+    node->type = pointer_to(left->type->base);
     return node;
   }
 

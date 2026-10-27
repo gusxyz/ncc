@@ -322,19 +322,13 @@ void generate_expression(Node *node) {
   case NODE_FUNCTION_CALL:
     generate_function_call(node);
     return;
+  case NODE_LOCAL_VARIABLE:
   case NODE_GLOBAL_VARIABLE:
     generate_lvalue_address(node);
+    if (node->type->kind == TYPE_ARRAY)
+      return;
     emit("pop rax");
     load_local_value(node->type, "rax");
-    emit("push rax");
-    return;
-  case NODE_LOCAL_VARIABLE:
-    generate_local_variable(node);
-    emit("pop rax");
-    if (node->type->kind == TYPE_U8)
-      emit("movzx rax, BYTE PTR [rax]");
-    else
-      emit("mov rax, QWORD PTR [rax]");
     emit("push rax");
     return;
   case NODE_DEREFERENCE:
