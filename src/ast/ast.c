@@ -1,4 +1,5 @@
 #include <ast/ast.h>
+#include <error/error.h>
 
 Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side) {
   Node *node = calloc(1, sizeof(Node));
@@ -43,4 +44,83 @@ Node *new_node_local_variable(LocalVariable *local_var) {
     node->offset = local_var->offset;
     node->type = local_var->type;
     return node;
+}
+
+Node *new_additive_node(NodeKind kind, Node *left, Node *right) {
+  TypeKind left_kind = left->type->kind;
+  TypeKind right_kind = right->type->kind;
+  bool left_integer = left_kind == TYPE_INT || left_kind == TYPE_U8;
+  bool right_integer = right_kind == TYPE_INT || right_kind == TYPE_U8;
+  bool left_pointer = left_kind == TYPE_POINTER;
+  bool right_pointer = right_kind == TYPE_POINTER;
+
+  if (left_integer && right_integer) {
+    Node *node = new_node(kind, left, right);
+    node->type = type_int;
+    return node;
+  }
+
+  if (left_pointer && right_integer) {
+    Node *scaled =
+        new_node(NODE_MULTIPLY, right, new_node_number(left->type->base->size));
+    scaled->type = type_int;
+
+    Node *node = new_node(kind, left, scaled);
+    node->type = left->type;
+    return node;
+  }
+
+  if (left_integer && right_pointer) {
+    if (kind == NODE_SUBTRACT)
+      error("Cannot subtract a pointer from an integer");
+
+    return new_additive_node(kind, right, left);
+  }
+
+  if (left_pointer && right_pointer) {
+    if (kind == NODE_ADD)
+      error("Can not add two pointers together");
+
+    if (!types_equal(left->type->base, right->type->base))
+      error("Cannot subtract pointers to different types");
+    Node *diff = new_node(NODE_SUBTRACT, left, right);
+    diff->type = type_int;
+
+    Node *node =
+        new_node(NODE_DIVIDE, diff, new_node_number(left->type->base->size));
+    node->type = type_int;
+    return node;
+  }
+
+  error("Invalid operands for additive expression");
+  return NULL;
+}
+
+int evaluate_constant(Node *node) {
+  switch (node->kind) {
+  case NODE_NUMBER:
+    return node->value;
+  case NODE_ADD:
+    return evaluate_constant(node->left_hand_side) +
+           evaluate_constant(node->right_hand_side);
+  case NODE_SUBTRACT:
+    return evaluate_constant(node->left_hand_side) -
+           evaluate_constant(node->right_hand_side);
+  case NODE_MULTIPLY:
+    return evaluate_constant(node->left_hand_side) *
+           evaluate_constant(node->right_hand_side);
+  case NODE_DIVIDE: {
+    int left = evaluate_constant(node->left_hand_side);
+    int right = evaluate_constant(node->right_hand_side);
+
+    if (right == 0)
+      error("Division by zero in constant expression");
+
+    return left / right;
+  }
+
+  default:
+    error("Expected a constant integer expression");
+    return 0;
+  }
 }

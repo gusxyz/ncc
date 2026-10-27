@@ -1,11 +1,9 @@
 #ifndef PARSER_INTERNAL_H
 #define PARSER_INTERNAL_H
 
-#include "ast/ast.h"
 #include <parser/parser.h>
 
 typedef struct Scope Scope;
-typedef struct StructTag StructTag;
 typedef struct Constant Constant;
 typedef struct TypeAlias TypeAlias;
 
@@ -16,6 +14,12 @@ struct Constant {
   int value;
 };
 
+struct TypeAlias {
+  TypeAlias *next;
+  Token *name;
+  Type *type;
+};
+
 struct Scope {
   Scope *parent;
   LocalVariable *locals;
@@ -23,47 +27,38 @@ struct Scope {
   TypeAlias *types;
 };
 
-struct StructTag {
-  Token *name;
-  Type *type;
-  StructTag *next;
-};
-
 extern Scope *current_scope;
+extern Scope *global_scope;
 extern int local_offset;
 extern int max_local_offset;
 extern Program *current_program;
 
-struct TypeAlias {
-  TypeAlias *next;
-  Token *name;
-  Type *type;
-};
-
+// Parser state and program symbols
 bool consume_kind(TokenKind kind);
-bool is_decleration();
+GlobalVariable *find_global(Token *token);
+Function *find_function(Token *name);
 
+// Scopes and local symbols
 void enter_scope();
-Node *parse_block_contents();
-void parse_function_bodies(Program *program);
+LocalVariable *find_lvar_in_scope(Token *token);
+LocalVariable *find_lvar(Token *token);
 Constant *find_constant_in_scope(Token *name);
-LocalVariable *find_lvar_in_scope(Token *name);
-Node *parse_if();
-Node *parse_while();
-Node *parse_for();
-Node *parse_decleration();
-Node *parse_statement();
-Node *parse_block();
+Constant *find_constant(Token *token);
+TypeAlias *find_type_alias(Token *name);
+TypeAlias *find_type_alias_in_current_scope(Token *name);
+LocalVariable *new_local_variable(Token *token, Type *type);
+
+// Types and declarations
+bool is_decleration();
 Type *parse_type();
+Node *parse_decleration();
+
+// Statements
+Node *parse_statement();
+Node *parse_block_contents();
+
+// Expressions
 Node *expression();
 Node *assign();
-Node *equality();
-Node *relational();
-Node *add();
-Node *multiply();
-Node *unary();
-Node *postfix();
-Node *primary();
-Function *find_function(Token *name);
 
 #endif

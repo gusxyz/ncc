@@ -140,7 +140,10 @@ typedef struct {
 
 // Functions
 Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side);
+Node *new_additive_node(NodeKind kind, Node *left, Node *right);
 Node *new_node_number(int value);
 Node *new_node_local_variable(LocalVariable *local_var);
+
+int evaluate_constant(Node *node);
 
 #endif

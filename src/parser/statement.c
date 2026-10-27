@@ -1,20 +1,22 @@
 #include <parser/parser_internal.h>
-#include <error/error.h>
-#include <da.h>
 
-Node *parse_if() {
+#include <da.h>
+#include <error/error.h>
+#include <stdlib.h>
+
+static Node *parse_if() {
   Node *node = new_node(NODE_IF, NULL, NULL);
   expect('(');
   node->condition = expression();
   expect(')');
   node->then = parse_statement();
 
-  if(consume_kind(TOKEN_ELSE))
-      node->els = parse_statement(); 
+  if (consume_kind(TOKEN_ELSE))
+    node->els = parse_statement();
   return node;
 }
 
-Node *parse_while() {
+static Node *parse_while() {
   Node *node = new_node(NODE_WHILE, NULL, NULL);
   expect('(');
   node->condition = expression();
@@ -24,23 +26,23 @@ Node *parse_while() {
   return node;
 }
 
-Node *parse_for() {
-    Node *node = new_node(NODE_FOR, NULL, NULL);
-    expect('(');
-    if (!consume(";")) {
-        node->init = expression();
-        expect(';');
-    }
-    if (!consume(";")) {
-        node->condition = expression();
-        expect(';');
-    }
-    if (!consume(")")) {
-        node->inc = expression();
-        expect(')');
-    }
-    node->then = parse_statement();
-    return node;
+static Node *parse_for() {
+  Node *node = new_node(NODE_FOR, NULL, NULL);
+  expect('(');
+  if (!consume(";")) {
+    node->init = expression();
+    expect(';');
+  }
+  if (!consume(";")) {
+    node->condition = expression();
+    expect(';');
+  }
+  if (!consume(")")) {
+    node->inc = expression();
+    expect(')');
+  }
+  node->then = parse_statement();
+  return node;
 }
 
 Node *parse_block_contents() {
@@ -56,13 +58,13 @@ Node *parse_block_contents() {
   return node;
 }
 
-Node *parse_block() {
+static Node *parse_block() {
 
   Scope *parent = current_scope;
   enter_scope();
 
   Node *node = parse_block_contents();
-  
+
   current_scope = parent;
   return node;
 }
@@ -83,13 +85,12 @@ Node *parse_statement() {
     expect(';');
     return new_node(NODE_CONTINUE, NULL, NULL);
   }
-  
+
   if (global_token->kind == TOKEN_RESERVED && global_token->string[0] == '{')
     return parse_block();
 
   if (is_decleration())
     return parse_decleration();
-
 
   if (consume_kind(TOKEN_RETURN)) {
     node = calloc(1, sizeof(Node));

@@ -1,13 +1,10 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <token/token.h>
-#include <stddef.h>
-#include <type/type.h>
 #include <ast/ast.h>
-
-LocalVariable *find_lvar(Token *token);
-LocalVariable *new_local_variable(Token *token, Type *type);
+#include <stddef.h>
+#include <token/token.h>
+#include <type/type.h>
 
 // Grammar
 void parse();
