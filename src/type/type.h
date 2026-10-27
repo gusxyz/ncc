@@ -6,9 +6,16 @@
 
 typedef enum {
     TYPE_INT,
-    TYPE_U8,
     TYPE_POINTER,
     TYPE_STRUCT,
+    TYPE_U8, // lmfao i think this is just i8 rn ngl dont think we have signdness
+    //TYPE_U8,
+    //TYPE_I8
+    //TYPE_I16,
+    //TYPE_U16,
+    //TYPE_I32,
+    //TYPE_U32,
+    //TYPE_I64,
 } TypeKind;
 
 typedef struct Type Type;

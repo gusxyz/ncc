@@ -1,3 +1,5 @@
+#include "ast/ast.h"
+#include "type/type.h"
 #include <parser/parser_internal.h>
 
 #include <da.h>
@@ -16,7 +18,7 @@ static Node *primary();
 Node *expression() { return assign(); }
 
 Node *assign() {
-  Node *node = equality();
+  Node *node = logical_or();
   if (consume("=")) {
     node = new_node(NODE_ASSIGN, node, assign());
     node->type = node->left_hand_side->type;
@@ -52,6 +54,28 @@ static Node *relational() {
   }
 }
 
+static Node *logical_and() {
+  Node *node = equality();
+
+  while(consume("&&")) {
+    node = new_node(NODE_LOGICAL_AND, node, equality());
+    node->type = type_int;
+  }
+
+  return node;
+}
+
+Node *logical_or() {
+  Node *node = logical_and();
+  
+  while(consume("||")) {
+    node = new_node(NODE_LOGICAL_OR, node, logical_and());
+    node->type = type_int;
+  }
+
+  return node;
+}
+
 static Node *add() {
   Node *node = multiply();
   for (;;) {
@@ -77,6 +101,11 @@ static Node *multiply() {
 }
 
 static Node *unary() {
+  if (consume("!")) {
+    Node * node = new_node(NODE_LOGICAL_NOT, unary(), NULL);
+    node->type = type_int;
+    return node;
+  }
   if (consume("+"))
     return unary();
   if (consume("-"))

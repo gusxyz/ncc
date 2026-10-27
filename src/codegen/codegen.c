@@ -1,3 +1,4 @@
+#include "ast/ast.h"
 #include <parser/parser.h>
 #include <type/type.h>
 #include <codegen/codegen.h>
@@ -274,6 +275,39 @@ void generate_program(Program *program) {
     generate_function(program->functions.items[i]);
 }
 
+static void generate_logical_not(Node *node) {
+    generate_expression(node->left_hand_side);
+    emit("pop rax");
+    emit("cmp rax, 0");
+    emit("sete al"); // sets only first byte of rax
+    emit("movzx rax, al"); // sets rax = to al
+    emit("push rax");
+}
+
+static void generate_logical(Node *node) {
+    int id = new_label();
+    int is_and = node->kind == NODE_LOGICAL_AND;
+
+    generate_expression(node->left_hand_side);
+    emit("pop rax");
+    emit("cmp rax, 0");
+    emit("%s .L.short.%d", is_and ? "je" : "jne", id);
+
+    generate_expression(node->right_hand_side);
+    emit("pop rax");
+    emit("cmp rax, 0");
+    emit("setne al"); // sets only first byte of rax if zf is not = 0
+    emit("movzx rax, al"); // sets rax = to al
+    emit("jmp .L.short.end.%d", id);
+
+    emit_label(".L.short.%d", id);
+    emit("mov rax, %d", is_and ? 0 : 1);
+
+    emit_label(".L.short.end.%d", id);
+    emit("push rax");
+    return;
+}
+
 void generate_expression(Node *node) {
   if (node->type && node->type->kind == TYPE_STRUCT)
     error("Whole-struct value operations are not supported yet");
@@ -323,6 +357,13 @@ void generate_expression(Node *node) {
     return;
   case NODE_ASSIGN:
     generate_assign(node);
+    return;
+  case NODE_LOGICAL_NOT:
+    generate_logical_not(node);
+    return;
+  case NODE_LOGICAL_AND:
+  case NODE_LOGICAL_OR:
+    generate_logical(node);
     return;
   case NODE_PRE_INCREMENT:
   case NODE_PRE_DECREMENT:

@@ -60,5 +60,6 @@ Node *parse_block_contents();
 // Expressions
 Node *expression();
 Node *assign();
+Node *logical_or();
 
 #endif

@@ -37,6 +37,9 @@ typedef enum {
   NODE_DEREFERENCE,
   NODE_STRING_LITERAL,
   NODE_MEMBER,
+  NODE_LOGICAL_NOT,
+  NODE_LOGICAL_AND,
+  NODE_LOGICAL_OR,
 } NodeKind;
 
 typedef struct Node Node;
