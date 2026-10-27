@@ -1,8 +1,9 @@
+ANSWER :: 42;
+Byte :: u8;
 Point :: struct { int x; int y; };
 
 int main() {
   p: Point;
-  p.x = 20;
-  p.y = 22;
-  return p.x + p.y;
+  p.x = ANSWER;
+  return p.x;
 }

@@ -1,3 +1,4 @@
+#include "token/token.h"
 #include <parser/parser_internal.h>
 
 #include <da.h>
@@ -78,7 +79,7 @@ static Function *parse_function(Type *type, Token *name) {
   function->name = calloc(name->length + 1, sizeof(char));
   memcpy(function->name, name->string, name->length);
 
-  current_scope = NULL;
+  current_scope = &global_scope;
   local_offset = 0;
   max_local_offset = 0;
   enter_scope();
@@ -98,7 +99,7 @@ static Function *parse_function(Type *type, Token *name) {
 
   skip_function_body();
 
-  current_scope = NULL;
+  current_scope = &global_scope;
   return function;
 }
 
@@ -114,8 +115,19 @@ static void parse_global_variable(Program *program, Type *type, Token *name) {
   expect(';');
 }
 
+
+bool name_exists(Token *token) {
+  if(find_global(token) ||
+    find_function(token) ||
+    find_constant_in_scope(token) ||
+    find_type_alias_in_current_scope(token))
+    return true;
+  return false;
+}
+
 void parse_source(Program *program, const char *source_path) {
   current_program = program;
+  current_scope = &global_scope;
 
   while (!at_eof()) {
     if (consume_kind(TOKEN_IMPORT)) {
@@ -138,6 +150,21 @@ void parse_source(Program *program, const char *source_path) {
       continue;
     }
 
+    Token *next = global_token->next_token;
+
+    if (global_token->kind == TOKEN_IDENTIFIER &&
+        next &&
+        next->kind == TOKEN_RESERVED &&
+        next->length == 2 &&
+        memcmp(next->string, "::",2) == 0) {
+          
+      if (name_exists(global_token))
+        error_at(global_token->string, "Name already declared");
+
+      parse_decleration();
+      continue;
+      }
+
     Type *type = parse_type();
     if (type->kind == TYPE_STRUCT && consume(";"))
       continue;
@@ -146,7 +173,7 @@ void parse_source(Program *program, const char *source_path) {
     if (!name)
       error_at(global_token->string, "Expected a global or function name");
 
-    if (find_global(name) || find_function(name))
+    if (name_exists(name))
       error_at(name->string, "Name already declared");
 
     if (global_token->kind == TOKEN_RESERVED && global_token->string[0] == '(')
@@ -165,7 +192,7 @@ void parse_function_bodies(Program *program) {
     set_user_input(function->source_text);
     set_token(function->body_tokens);
 
-    current_scope = NULL;
+    current_scope = &global_scope;
     enter_scope();
 
     current_scope->locals = function->locals;
@@ -177,6 +204,6 @@ void parse_function_bodies(Program *program) {
     function->locals = current_scope->locals;
     function->stack_size = (max_local_offset + 15) / 16 * 16;
 
-    current_scope = NULL;
+    current_scope = &global_scope;
   }
 }

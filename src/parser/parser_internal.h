@@ -28,7 +28,7 @@ struct Scope {
 };
 
 extern Scope *current_scope;
-extern Scope *global_scope;
+extern Scope global_scope;
 extern int local_offset;
 extern int max_local_offset;
 extern Program *current_program;

@@ -125,7 +125,7 @@ static Type *parse_struct_type() {
     return tag->type;
   }
 
-  if (name && current_scope)
+  if (name && current_scope && current_scope != &global_scope)
     error_at(name->string, "Struct definitions require top-level scope");
   if (tag)
     error_at(name->string, "Struct with this name already defined.");

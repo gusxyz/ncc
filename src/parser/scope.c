@@ -4,7 +4,7 @@
 #include <string.h>
 
 Scope *current_scope;
-Scope *global_scope;
+Scope global_scope;
 int local_offset;
 int max_local_offset;
 
