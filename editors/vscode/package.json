@@ -1,0 +1,75 @@
+{
+  "name": "novolang-language",
+  "displayName": "Novolang (NCC)",
+  "description": "C-based Novolang highlighting with declarations, inference, constants, type aliases, arrays, casts, sizeof, imports, and syscalls.",
+  "version": "0.2.0",
+  "publisher": "novolang-local",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "novolang",
+    "ncc",
+    "nl"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "novolang",
+        "aliases": [
+          "Novolang",
+          "novolang",
+          "NCC"
+        ],
+        "extensions": [
+          ".nl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "novolang",
+        "scopeName": "source.novolang",
+        "path": "./syntaxes/novolang.tmLanguage.json"
+      },
+      {
+        "scopeName": "novolang.additions",
+        "path": "./syntaxes/additions.tmLanguage.json",
+        "injectTo": [
+          "source.novolang"
+        ]
+      }
+    ],
+    "snippets": [
+      {
+        "language": "novolang",
+        "path": "./snippets/novolang.code-snippets"
+      }
+    ],
+    "configurationDefaults": {
+      "[novolang]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true
+      }
+    }
+  },
+  "scripts": {
+    "package": "vsce package --no-dependencies --allow-missing-repository --skip-license"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "4.0.0"
+  }
+}

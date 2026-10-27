@@ -1,0 +1,116 @@
+{
+  "Main function": {
+    "prefix": "main",
+    "body": [
+      "int main() {",
+      "  ${0:return 0;}",
+      "}"
+    ],
+    "description": "Program entry point"
+  },
+  "Function": {
+    "prefix": "fn",
+    "body": [
+      "${1:int} ${2:name}(${3}) {",
+      "  $0",
+      "}"
+    ],
+    "description": "C-style Novolang function"
+  },
+  "Import": {
+    "prefix": [
+      "import",
+      "#import"
+    ],
+    "body": [
+      "#import \"${1:answer.nl}\"$0"
+    ],
+    "description": "Import a file relative to this source file"
+  },
+  "If": {
+    "prefix": "if",
+    "body": [
+      "if (${1:condition}) {",
+      "  $0",
+      "}"
+    ],
+    "description": "Conditional block"
+  },
+  "While": {
+    "prefix": "while",
+    "body": [
+      "while (${1:condition}) {",
+      "  $0",
+      "}"
+    ],
+    "description": "While loop"
+  },
+  "For": {
+    "prefix": "for",
+    "body": [
+      "for (${1:i} := 0; $1 < ${2:count}; $1++) {",
+      "  $0",
+      "}"
+    ],
+    "description": "For loop with a scoped inferred counter"
+  },
+  "Linux syscall": {
+    "prefix": "syscall",
+    "body": "syscall(${1:number}${2:, arguments})$0",
+    "description": "Linux syscall builtin; up to six syscall arguments"
+  },
+  "Linux write wrapper": {
+    "prefix": "linux_write",
+    "body": [
+      "int linux_write(int fd, char *buffer, int length) {",
+      "  return syscall(1, fd, buffer, length);",
+      "}"
+    ],
+    "description": "Linux x86-64 write syscall wrapper"
+  },
+  "Typed declaration": {
+    "prefix": "var",
+    "body": "${1:name}: ${2:int}${3: = value};$0",
+    "description": "Explicitly typed local declaration"
+  },
+  "Inferred declaration": {
+    "prefix": "infer",
+    "body": "${1:name} := ${2:value};$0",
+    "description": "Infer a local variable type"
+  },
+  "Constant": {
+    "prefix": "const",
+    "body": "${1:NAME} :: ${2:42};$0",
+    "description": "Compile-time integer constant"
+  },
+  "Type alias": {
+    "prefix": "alias",
+    "body": "${1:Byte} :: ${2:u8};$0",
+    "description": "Alias an existing type"
+  },
+  "Struct type": {
+    "prefix": "struct",
+    "body": [
+      "${1:Point} :: struct {",
+      "  ${2:int} ${3:x};",
+      "  $0",
+      "};"
+    ],
+    "description": "Named struct type; members currently use C declaration syntax"
+  },
+  "Fixed array": {
+    "prefix": "array",
+    "body": "${1:values}: ${2:int}[${3:4}];$0",
+    "description": "Fixed-size array declaration"
+  },
+  "Size of": {
+    "prefix": "sizeof",
+    "body": "sizeof(${1:int})$0",
+    "description": "Size of a type or expression; operand is not evaluated"
+  },
+  "Cast": {
+    "prefix": "cast",
+    "body": "(${1:u8})${2:value}$0",
+    "description": "C-style explicit cast"
+  }
+}
