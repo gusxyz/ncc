@@ -1,8 +1,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <error.h>
-#include <token.h>
+#include <error/error.h>
+#include <token/token.h>
 
 char *user_input;
 

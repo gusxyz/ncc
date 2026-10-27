@@ -1,11 +1,10 @@
 #define _XOPEN_SOURCE 700
 
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <error.h>
-#include <import.h>
+#include <error/error.h>
+#include <import/import.h>
 #include <errno.h>
 #include <da.h>
 

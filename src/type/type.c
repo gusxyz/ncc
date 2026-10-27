@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <type.h>
+#include <type/type.h>
 
 static Type integer_type = {
     .kind = TYPE_INT,

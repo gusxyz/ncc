@@ -1,10 +1,10 @@
-#include "import.h"
+#include <import/import.h>
 #include <stdio.h>
-#include <token.h>
-#include <error.h>
-#include <parser.h>
-#include <codegen.h>
-#include <emit.h>
+#include <token/token.h>
+#include <error/error.h>
+#include <parser/parser.h>
+#include <codegen/codegen.h>
+#include <emit/emit.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>

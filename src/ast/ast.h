@@ -1,9 +1,9 @@
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef AST_H
+#define AST_H
 
-#include <token.h>
-#include <stddef.h>
-#include <type.h>
+#include <stdlib.h>
+#include <type/type.h>
+#include <token/token.h>
 
 typedef enum {
   NODE_ADD,
@@ -90,6 +90,7 @@ struct GlobalVariable {
   size_t length;
   Type* type;
 };
+
 typedef struct {
   LocalVariable **items;
   size_t count;
@@ -97,10 +98,16 @@ typedef struct {
 } ParamaterArray;
 
 typedef struct {
-  GlobalVariable **items;
+  char *path;
+  const char* from_path;
+} ImportRequest;
+
+typedef struct {
+  ImportRequest *items;
   size_t count;
   size_t capacity;
-} GlobalsArray;
+} ImportArray;
+
 
 typedef struct {
   int stack_size;
@@ -120,15 +127,10 @@ typedef struct {
 } FunctionArray;
 
 typedef struct {
-  char *path;
-  const char* from_path;
-} ImportRequest;
-
-typedef struct {
-  ImportRequest *items;
+  GlobalVariable **items;
   size_t count;
   size_t capacity;
-} ImportArray;
+} GlobalsArray;
 
 typedef struct {
   FunctionArray functions;
@@ -139,23 +141,6 @@ typedef struct {
 // Functions
 Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side);
 Node *new_node_number(int value);
-LocalVariable *find_lvar(Token *token);
-LocalVariable *new_local_variable(Token *token, Type *type);
-
-// Grammar
-void parse();
-void parse_source(Program *program, const char *source_path);
-void parse_function_bodies(Program *program);
-Node *parse_decleration();
-Node *statement();
-Node *expression();
-Node *assign();
-Node *equality();
-Node *relational();
-Node *add();
-Node *multiply();
-Node *unary();
-Node *postfix();
-Node *primary();
+Node *new_node_local_variable(LocalVariable *local_var);
 
 #endif

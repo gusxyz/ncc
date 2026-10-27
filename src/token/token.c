@@ -2,8 +2,8 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <string.h>
-#include <token.h>
-#include <error.h>
+#include <token/token.h>
+#include <error/error.h>
 #include <da.h>
 
 Token *global_token;

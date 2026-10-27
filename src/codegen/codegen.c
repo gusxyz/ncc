@@ -1,8 +1,8 @@
-#include <parser.h>
-#include <type.h>
-#include <codegen.h>
-#include <error.h>
-#include <emit.h>
+#include <parser/parser.h>
+#include <type/type.h>
+#include <codegen/codegen.h>
+#include <error/error.h>
+#include <emit/emit.h>
 #include <string.h>
 
 static const char *argument_registers[] = {
