@@ -30,8 +30,12 @@ static Node *parse_for() {
   Node *node = new_node(NODE_FOR, NULL, NULL);
   expect('(');
   if (!consume(";")) {
-    node->init = expression();
-    expect(';');
+    if (is_decleration()) {
+      node->init = parse_decleration();
+    } else {
+      node->init = expression();
+      expect(';');
+    }
   }
   if (!consume(";")) {
     node->condition = expression();

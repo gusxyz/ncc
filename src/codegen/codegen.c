@@ -490,10 +490,9 @@ void generate_for(Node *node) {
   int savedcont = continue_label;
   break_label = id;
   continue_label = id;
-  if(node->init) {
-    generate_expression(node->init);
-    emit("pop rax");
-  }
+  if (node->init)
+    generate_statement(node->init);
+  
   emit_label(".L.loop.%d", id);
   if(node->condition) {
     generate_expression(node->condition);

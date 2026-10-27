@@ -15,33 +15,6 @@ Most of the basic language is there now. I should be able to start porting the c
 
 Enough to write a lexer, parser, AST, symbol tables and assembly generator. Main things left are arrays, memory allocation and actually being able to run the compiler as a normal program.
 
-## current regression
-
-Changed `type_int` to point at a `TYPE_U64`, but `new_additive_node()` still only checks for `TYPE_INT` and `TYPE_U8`. So normal addition/subtraction and pointer arithmetic are broken right now.
-
-- current tree: 215 passed, 108 failed out of 323 tests
-- temporary build changing just the integer kind back to `TYPE_INT`: all 323 passed
-
-Need a shared `is_integer_type()` instead of checking individual kinds everywhere. This is from the integer type work, not 108 separate bugs.
-
-## fixed size arrays
-
-Currently have `TYPE_ARRAY`, parsing for `int[4]`, size/alignment calculation and storage allocation through the existing local/global code.
-
-Still need:
-
-- [ ] actually set `array_length` in `array_of()`
-- [ ] accept arrays in indexing, currently `a[0]` only accepts pointers
-- [ ] decide array expression/decay rules and generate an address instead of loading a qword
-- [ ] compare element types and lengths in `types_equal()`
-- [ ] allow constant expressions for lengths, like `int[N]` or `int[2*4]`
-- [ ] define array assignment rules, either copy properly or reject it
-- [ ] array initialization
-- [ ] sort out multidimensional array order, brackets currently wrap the type left to right
-- [ ] sort out pointer-to-array types
-
-Need to check indexing works for local arrays, globals, struct members and nested arrays. Initializers can wait if manual element assignment is enough for the first port.
-
 ## compiler features still missing
 
 ### sizeof
