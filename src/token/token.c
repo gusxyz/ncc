@@ -150,6 +150,22 @@ Token *tokenize(char *current_char){
       continue;
     }
 
+    if(strncmp(current_char, "//", 2) == 0) {
+      current_char += 2;
+      while (*current_char != '\n');
+        current_char++;
+      continue;
+    }
+
+    if(strncmp(current_char, "/*", 2) == 0) {
+      // find the */ needle out of the haystack gotta love it
+      char *needle = strstr(current_char + 2, "*/");
+      if(!needle)
+        error_at(current_char, "Unterminated block comment");
+      current_char = needle + 2;
+      continue;
+    }
+
     if(strncmp(current_char, "#import", 7) == 0 && 
     !isalnum(current_char[7]) &&
     current_char[7] != '_') {

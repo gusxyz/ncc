@@ -50,7 +50,6 @@ Can avoid needing this immediately by using pointers and assigning fields indivi
 ### initialized globals and aggregate initializers
 
 Globals only get zeroed storage. No `int counter = 1;` or initialized arrays of structs yet.
-
 The C lexer uses initialized operator and keyword tables. Can build those in an init function for now instead of implementing all initializer syntax first.
 
 ### comments
@@ -59,8 +58,7 @@ Neither `//` nor `/* ... */` works yet. Should add these before writing a whole 
 
 ### more operators
 
-Missing `%`, shifts, bitwise AND/OR/XOR and complement. Useful for integer formatting, hashing, alignment and syscall flags.
-
+Missing shifts, bitwise AND/OR/XOR and complement. Useful for integer formatting, hashing, alignment and syscall flags.
 Not all strictly required to start, but worth adding as the port needs them.
 
 ## runtime work
@@ -95,13 +93,8 @@ Also need to fix import path resolution: it currently uses the first slash in th
 Can keep using external `as` and `ld`. Self hosting doesn't require writing an assembler or linker.
 
 ## order
-
-1. Fix the integer regression.
-2. Finish fixed size arrays.
-3. Add sizeof.
-4. Add forward struct declarations.
-5. Get argc/argv and the small runtime working.
-6. Start porting the lexer, then parser and codegen.
-7. Add other features when the port actually needs them.
+1. Get argc/argv and the small runtime working.
+2. Start porting the lexer, then parser and codegen.
+3. Add other features when the port actually needs them.
 
 Actual milestone is the C compiler building the novo compiler, then that compiler rebuilding itself, then the rebuilt compiler passing the same tests.
