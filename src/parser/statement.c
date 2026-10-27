@@ -28,6 +28,7 @@ static Node *parse_while() {
 
 static Node *parse_for() {
   Node *node = new_node(NODE_FOR, NULL, NULL);
+  enter_scope();
   expect('(');
   if (!consume(";")) {
     if (is_decleration()) {
@@ -46,6 +47,7 @@ static Node *parse_for() {
     expect(')');
   }
   node->then = parse_statement();
+  current_scope = current_scope->parent;
   return node;
 }
 
