@@ -421,6 +421,11 @@ void generate_expression(Node *node) {
     emit("cqo");
     emit("idiv rdi");
     break;
+  case NODE_MODULO:
+    emit("cqo");
+    emit("idiv rdi");
+    emit("mov rax, rdx");
+    break;
   default:
     error("Invalid expression node kind %d", node->kind);
   }

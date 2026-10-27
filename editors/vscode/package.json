@@ -2,7 +2,7 @@
   "name": "novolang-language",
   "displayName": "Novolang (NCC)",
   "description": "C-based Novolang highlighting with declarations, inference, constants, type aliases, arrays, casts, sizeof, imports, and syscalls.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "novolang-local",
   "private": true,
   "license": "UNLICENSED",
@@ -36,7 +36,11 @@
         "extensions": [
           ".nl"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/novolang.svg",
+          "dark": "./icons/novolang.svg"
+        }
       }
     ],
     "grammars": [
@@ -64,7 +68,14 @@
         "editor.tabSize": 2,
         "editor.insertSpaces": true
       }
-    }
+    },
+    "iconThemes": [
+      {
+        "id": "novolang-seti",
+        "label": "Novolang (Seti)",
+        "path": "./icons/novolang-seti.json"
+      }
+    ]
   },
   "scripts": {
     "package": "vsce package --no-dependencies --allow-missing-repository --skip-license"

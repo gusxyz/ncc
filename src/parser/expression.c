@@ -97,8 +97,12 @@ static Node *multiply() {
       node = new_node(NODE_MULTIPLY, node, cast());
     } else if (consume("/")) {
       node = new_node(NODE_DIVIDE, node, cast());
+    } else if (consume("%")) {
+      node = new_node(NODE_MODULO, node, cast());
     } else
       return node;
+
+    node->type = type_int;
   }
 }
 

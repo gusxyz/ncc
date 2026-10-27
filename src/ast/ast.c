@@ -117,6 +117,9 @@ int evaluate_constant(Node *node) {
   case NODE_MULTIPLY:
     return evaluate_constant(node->left_hand_side) *
            evaluate_constant(node->right_hand_side);
+  case NODE_MODULO:
+    return evaluate_constant(node->left_hand_side) %
+           evaluate_constant(node->right_hand_side);
   case NODE_DIVIDE: {
     int left = evaluate_constant(node->left_hand_side);
     int right = evaluate_constant(node->right_hand_side);
