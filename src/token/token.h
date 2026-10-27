@@ -24,6 +24,7 @@ typedef enum {
   TOKEN_IMPORT,
   TOKEN_STRUCT,
   TOKEN_SIZEOF,
+  TOKEN_ENUM,
 } TokenKind;
 
 typedef struct Token Token;

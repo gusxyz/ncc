@@ -40,27 +40,74 @@ static Node *equality() {
   }
 }
 
-static Node *relational() {
+static Node* shift() {
   Node *node = add();
   for (;;) {
+    if (consume("<<"))
+      node = new_node(NODE_SHIFT_LEFT, node, add());
+    else if (consume(">>"))
+      node = new_node(NODE_SHIFT_RIGHT, node, add());
+    else {
+      return node;
+    }
+    node->type = type_int;
+  }
+}
+
+static Node *relational() {
+  Node *node = shift();
+  for (;;) {
     if (consume(">"))
-      node = new_node(NODE_LESS_THAN, add(), node);
+      node = new_node(NODE_LESS_THAN, shift(), node);
     else if (consume("<"))
-      node = new_node(NODE_LESS_THAN, node, add());
+      node = new_node(NODE_LESS_THAN, node, shift());
     else if (consume(">="))
-      node = new_node(NODE_EQUAL_OR_LESS_THAN, add(), node);
+      node = new_node(NODE_EQUAL_OR_LESS_THAN, shift(), node);
     else if (consume("<="))
-      node = new_node(NODE_EQUAL_OR_LESS_THAN, node, add());
+      node = new_node(NODE_EQUAL_OR_LESS_THAN, node, shift());
     else
       return node;
   }
 }
 
-static Node *logical_and() {
+static Node* bitwise_and() {
   Node *node = equality();
 
+  while(consume("&")) {
+    node = new_node(NODE_BITWISE_AND, node, equality());
+    node->type = type_int;
+  }
+
+  return node;
+}
+
+static Node* bitwise_xor() {
+  Node *node = bitwise_and();
+
+  while(consume("^")) {
+    node = new_node(NODE_BITWISE_XOR, node, bitwise_and());
+    node->type = type_int;
+  }
+
+  return node;
+}
+
+static Node* bitwise_or() {
+  Node *node = bitwise_xor();
+
+  while(consume("|")) {
+    node = new_node(NODE_BITWISE_OR, node, bitwise_xor());
+    node->type = type_int;
+  }
+
+  return node;
+}
+
+static Node *logical_and() {
+  Node *node = bitwise_or();
+
   while(consume("&&")) {
-    node = new_node(NODE_LOGICAL_AND, node, equality());
+    node = new_node(NODE_LOGICAL_AND, node, bitwise_or());
     node->type = type_int;
   }
 
@@ -148,6 +195,11 @@ static Node *unary() {
     node->type = type_int;
     return node;
   }
+  if (consume("~")) {
+    Node *node = new_node(NODE_BITWISE_NOT, cast(), NULL);
+    node->type = type_int;
+    return node;
+  }
   if (consume("+"))
     return unary();
   if (consume("-"))
@@ -204,7 +256,7 @@ static Node *parse_member(Node *object) {
   if (!name)
     error_at(global_token->string, "Expected a member name.");
 
-  for (StructMember *member = object->type->members; member;
+  for (StructMember *member = object->type->struct_members; member;
        member = member->next) {
     if (member->length == name->length &&
         memcmp(member->name, name->string, member->length) == 0) {
@@ -215,7 +267,7 @@ static Node *parse_member(Node *object) {
     }
   }
 
-  error_at(name->string, "Unkown member of struct");
+  error_at(name->string, "Unknown member of struct");
   return NULL;
 }
 
@@ -303,8 +355,26 @@ static Node *primary() {
   }
 
   Token *identifier_token = consume_identifier();
+
   if (identifier_token) {
-    // its a function
+    TypeAlias *alias = find_type_alias(identifier_token);
+    if (alias && alias->type->kind == TYPE_ENUM) {
+      expect('.');
+
+      Token *name = consume_identifier();
+      if(!name)
+        error_at(global_token->string, "Expected an enum member name");
+
+      for(EnumMember *member = alias->type->enum_members; member; member = member->next)
+        if(member->length == name->length && memcmp(member->name, name->string, name->length) == 0) {
+            Node *node = new_node_number(member->value);
+            node->type = alias->type;
+            return node;
+          }
+
+      error_at(name->string, "Unknown enum member");
+    }
+
     if (consume("(")) {
       return parse_function_call(identifier_token);
     }

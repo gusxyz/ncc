@@ -52,13 +52,9 @@ Can avoid needing this immediately by using pointers and assigning fields indivi
 Globals only get zeroed storage. No `int counter = 1;` or initialized arrays of structs yet.
 The C lexer uses initialized operator and keyword tables. Can build those in an init function for now instead of implementing all initializer syntax first.
 
-### comments
-
-Neither `//` nor `/* ... */` works yet. Should add these before writing a whole compiler in novo.
-
 ### more operators
 
-Missing shifts, bitwise AND/OR/XOR and complement. Useful for integer formatting, hashing, alignment and syscall flags.
+Missing shifts and complement. Useful for integer formatting, hashing, alignment and syscall flags.
 Not all strictly required to start, but worth adding as the port needs them.
 
 ## runtime work

@@ -36,7 +36,7 @@ assert_program 42 'struct Counter { int value; }; int main() { c: struct Counter
 assert_program 41 'struct Counter { int value; }; int main() { c: struct Counter; c.value=20; old: int=c.value++; return old+c.value; }'
 
 # Struct test errors
-assert_error 'Unkown member of struct' \
+assert_error 'Unknown member of struct' \
   'struct Point { int x; }; int main() { p: struct Point; return p.y; }'
 
 assert_error 'Member access requires a struct' \

@@ -1,9 +1,12 @@
+#include <token/token.h>
+#include <type/type.h>
 #include <parser/parser_internal.h>
 
 #include <da.h>
 #include <error/error.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 typedef struct StructTag StructTag;
 
@@ -44,6 +47,7 @@ bool is_type_start() {
   case TOKEN_U8:
   case TOKEN_CHAR:
   case TOKEN_STRUCT:
+  case TOKEN_ENUM:
     return true;
   case TOKEN_IDENTIFIER:
     return find_type_alias(global_token);
@@ -75,7 +79,7 @@ static void allocate_struct_member(Type *type, StructMember ***tail,
 }
 
 static void parse_struct_body(Type *type) {
-  StructMember **tail = &type->members;
+  StructMember **tail = &type->struct_members;
   int offset = 0;
 
   while (!consume("}")) {
@@ -90,7 +94,7 @@ static void parse_struct_body(Type *type) {
 
     expect(';');
 
-    for (StructMember *m = type->members; m; m = m->next) {
+    for (StructMember *m = type->struct_members; m; m = m->next) {
       if (m->length == member_name->length &&
           memcmp(m->name, member_name->string, member_name->length) == 0)
         error_at(member_name->string, "Duplicate member name");
@@ -101,7 +105,7 @@ static void parse_struct_body(Type *type) {
     allocate_struct_member(type, &tail, &offset, member_type, member_name);
   }
 
-  if (!type->members)
+  if (!type->struct_members)
     error_at(global_token->string,
              "Declaring a struct without members is not supported");
 
@@ -120,7 +124,7 @@ static Type *parse_struct_type() {
     if (!name)
       error_at(global_token->string, "expected a struct name or '{'");
     if (!tag)
-      error_at(name->string, "Unkown struct type");
+      error_at(name->string, "Unknown struct type");
 
     return tag->type;
   }
@@ -146,6 +150,56 @@ static Type *parse_struct_type() {
   return type;
 }
 
+void parse_enum_members(Type *type) {
+  EnumMember **tail = &type->enum_members;
+  int value = 0;
+  while (!consume("}")) {
+    if (at_eof())
+      error("Expected '} before end of enum");
+
+    Token *name = consume_identifier();
+    if (!name)
+      error_at(global_token->string, "Expected an enum member name");
+
+    for (EnumMember *enum_member = type->enum_members; enum_member;enum_member = enum_member->next)
+      if (memcmp(enum_member->name, name->string, name->length) == 0)
+        error_at(name->string, "Member with that name already exists");
+
+    EnumMember *member = calloc(1, sizeof(*member));
+    member->name = name->string;
+    member->length = name->length;
+    member->value = value;
+
+    *tail = member;
+    tail = &member->next;
+
+    if (consume("}"))
+      break;
+
+    expect(',');
+
+    if (consume("}"))
+      break;
+
+    if (value == INT_MAX)
+      error_at(global_token->string, "Enum value overflow");
+    
+    value++;
+  }
+}
+
+Type *parse_enum() {
+  expect('{');
+
+  Type *type = calloc(1, sizeof(*type));
+  type->kind = TYPE_ENUM;
+  type->size = 8;
+  type->alignment = 8;
+
+  parse_enum_members(type);
+  return type;
+}
+
 Type *parse_type() {
   Type *type;
 
@@ -157,6 +211,8 @@ Type *parse_type() {
     type = type_u8;
   else if (consume_kind(TOKEN_STRUCT))
     type = parse_struct_type();
+  else if (consume_kind(TOKEN_ENUM))
+    type = parse_enum();
   else {
     TypeAlias *alias = NULL;
 

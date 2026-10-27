@@ -1,14 +1,96 @@
-program = stmt*
-stmt    = expr ";"
-        | "if" "(" expr ")" stmt ("else" stmt)?
-        | "while" "(" expr ")" stmt
-        | "for" "(" expr? ";" expr? ";" expr? ")" stmt
-        | ...
-expr       = assign
-assign     = equality ("=" assign)?
-equality   = relational ("==" relational | "!=" relational)*
-relational = add ("<" add | "<=" add | ">" add | ">=" add)*
-add        = mul ("+" mul | "-" mul)*
-mul        = unary ("*" unary | "/" unary)*
-unary      = ("+" | "-")? primary
-primary    = num | ident | "(" expr ")"
+program = top_level*
+
+top_level = import
+          | function
+          | global_decl
+          | struct_decl
+          | binding_decl
+
+import      = "#import" string
+function    = type ident "(" parameters? ")" block
+parameters  = parameter ("," parameter)*
+parameter   = type ident
+global_decl = type ident ";"
+
+struct_decl = "struct" ident "{" member_decl* "}" ";"
+member_decl = type ident ";"
+
+binding_decl = ident "::" (type | assign) ";"
+
+type = base_type "*"* array_suffix*
+base_type = "int" | "u8" | "char" | type_name | struct_type
+struct_type = "struct" (
+                ident ("{" member_decl* "}")?
+              | "{" member_decl* "}"
+              )
+array_suffix = "[" num "]"
+
+
+block = "{" stmt* "}"
+
+stmt = block
+     | local_decl
+     | binding_decl
+     | "return" expr ";"
+     | "if" "(" expr ")" stmt ("else" stmt)?
+     | "while" "(" expr ")" stmt
+     | "for" "(" for_init expr? ";" expr? ")" stmt
+     | "break" ";"
+     | "continue" ";"
+     | expr ";"
+
+local_decl = ident ":" type ("=" assign)? ";"
+           | ident ":=" assign ";"
+
+for_init = ";"
+         | local_decl
+         | binding_decl
+         | expr ";"
+
+
+expr = assign
+
+assign = logical_or ("=" assign)?
+
+logical_or  = logical_and ("||" logical_and)*
+logical_and = bitwise_or ("&&" bitwise_or)*
+
+bitwise_or  = bitwise_xor ("|" bitwise_xor)*
+bitwise_xor = bitwise_and ("^" bitwise_and)*
+bitwise_and = equality ("&" equality)*
+
+equality = relational (("==" | "!=") relational)*
+
+relational = shift (("<" | "<=" | ">" | ">=") shift)*
+
+shift = add (("<<" | ">>") add)*
+
+add = mul (("+" | "-") mul)*
+
+mul = cast (("*" | "/" | "%") cast)*
+
+cast = "(" type ")" cast
+     | unary
+
+unary = ("+" | "-" | "!" | "~" | "*" | "&") cast
+      | ("++" | "--") unary
+      | "sizeof" "(" type ")"
+      | "sizeof" "(" expr ")"
+      | "sizeof" unary
+      | postfix
+
+postfix = primary (
+            "[" expr "]"
+          | "." ident
+          | "->" ident
+          | "++"
+          | "--"
+          )*
+
+primary = num
+        | char_literal
+        | string
+        | ident ("(" arguments? ")")?
+        | "(" expr ")"
+
+arguments = assign ("," assign)*

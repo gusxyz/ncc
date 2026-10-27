@@ -1,4 +1,4 @@
-#include "ast/ast.h"
+#include <ast/ast.h>
 #include <parser/parser.h>
 #include <type/type.h>
 #include <codegen/codegen.h>
@@ -312,6 +312,7 @@ void generate_expression(Node *node) {
   if (node->type && node->type->kind == TYPE_STRUCT)
     error("Whole-struct value operations are not supported yet");
 
+ // Dedicated Evaluation Rules
  switch(node->kind) {
   case NODE_NUMBER:
     emit("push %d", node->value);
@@ -376,6 +377,12 @@ void generate_expression(Node *node) {
   case NODE_POST_INCREMENT:
     generate_post_update(node);
     return;
+  case NODE_BITWISE_NOT:
+    generate_expression(node->left_hand_side);
+    emit("pop rax");
+    emit("not rax");
+    emit("push rax");
+    return;
   default:
     break;
   }
@@ -387,6 +394,7 @@ void generate_expression(Node *node) {
   emit("pop rdi");
   emit("pop rax");
 
+  // BInary Operators
   switch (node->kind) {
   case NODE_ADD:
     emit("add rax, rdi");
@@ -425,6 +433,23 @@ void generate_expression(Node *node) {
     emit("cqo");
     emit("idiv rdi");
     emit("mov rax, rdx");
+    break;
+  case NODE_BITWISE_AND:
+    emit("and rax, rdi");
+    break;
+  case NODE_BITWISE_XOR:
+    emit("xor rax, rdi");
+    break;
+  case NODE_BITWISE_OR:
+    emit("or rax, rdi");
+    break;
+  case NODE_SHIFT_LEFT:
+    emit("mov rcx, rdi");
+    emit("shl rax, cl");
+    break;
+  case NODE_SHIFT_RIGHT:
+    emit("mov rcx, rdi");
+    emit("sar rax, cl");
     break;
   default:
     error("Invalid expression node kind %d", node->kind);

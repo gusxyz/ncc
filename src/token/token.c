@@ -16,6 +16,7 @@ static const char *operators[] = {
     "==", "!=", "<=", ">=",
     ":=", "::",
     "++", "--", "->", 
+    "<<", ">>",
     "&&", "||","!",
     "+", "-", "*", "/", "%",
     "(", ")", 
@@ -23,7 +24,8 @@ static const char *operators[] = {
     "<", ">",
     "=", ";", ":",
     "{", "}", 
-    ",", ".", "&",
+    ",", ".", 
+    "&", "|", "^", "~",
 };
 
 static const Keyword keywords[] = {
@@ -37,8 +39,9 @@ static const Keyword keywords[] = {
   {"return",   TOKEN_RETURN},
   {"break",    TOKEN_BREAK},
   {"continue", TOKEN_CONTINUE},
-  {"struct", TOKEN_STRUCT},
-  {"sizeof", TOKEN_SIZEOF},
+ {"struct", TOKEN_STRUCT},
+ {"sizeof", TOKEN_SIZEOF},
+ {"enum", TOKEN_ENUM},
 };
 
 // if next token is the expected symbol advance and return true
@@ -152,7 +155,7 @@ Token *tokenize(char *current_char){
 
     if(strncmp(current_char, "//", 2) == 0) {
       current_char += 2;
-      while (*current_char != '\n');
+      while (*current_char && *current_char != '\n')
         current_char++;
       continue;
     }

@@ -1,0 +1,27 @@
+assert 2 'return 6&3;'
+assert 7 'return 6|3;'
+assert 5 'return 6^3;'
+assert 0 'return 42^42;'
+assert 42 'return 42|0;'
+assert 0 'return 42&0;'
+
+assert 1 'return (6&3)==2;'
+assert 1 'return (-1&255)==255;'
+assert 3 'return 1|2^3&4;'
+assert 0 'return 2&3==2;'
+
+assert 1 'x := 0; 0&(x=1); return x;'
+assert 1 'x := 0; 1|(x=1); return x;'
+assert 1 'x := 0; 0^(x=1); return x;'
+
+assert 1 'return 6&3 && 0|4;'
+assert 1 'x := 42; p := &x; return (*p&15)==10;'
+
+assert 1 'return ~0 == -1;'
+assert 1 'return ~-1 == 0;'
+assert 1 'return ~5 == -6;'
+assert 42 'return ~~42;'
+assert 250 'return ~5 & 255;'
+assert 1 'return ~1 == -2;'
+assert 1 'x := 42; return ~x == -43;'
+assert 1 'x := 0; return ~(x=5) == -6 && x==5;'
