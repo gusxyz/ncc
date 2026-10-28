@@ -20,7 +20,7 @@ assert_program 42 'struct Point { int x; int y; }; int main() { p: struct Point;
 assert_program 42 'struct Point { int x; int y; }; int main() { p: struct Point; ptr: struct Point*=&p; ptr->x=20; ptr->y=22; return p.x+p.y; }'
 
 # Struct pointers passed to functions
-assert_program 42 'struct Point { int x; }; int set(struct Point *p) { p->x=42; return 0; } int main() { p: struct Point; set(&p); return p.x; }'
+assert_program 42 'struct Point { int x; }; int set(p: struct Point*) { p->x=42; return 0; } int main() { p: struct Point; set(&p); return p.x; }'
 
 # Pointer-valued members
 assert_program 42 'struct Holder { int *value; }; int main() { x: int=42; h: struct Holder; h.value=&x; return *h.value; }'

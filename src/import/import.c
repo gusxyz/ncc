@@ -1,3 +1,4 @@
+#include "token/token.h"
 #define _XOPEN_SOURCE 700
 
 #include <stdio.h>
@@ -86,7 +87,7 @@ char *resolve_import_path(const char *source_path, const char *import_path) {
     }
 
 
-    const char *slash = strchr(source_path, '/');
+    const char *slash = strrchr(source_path, '/');
     size_t directory_length = slash ? (size_t) (slash - source_path + 1) : 0;
 
     char *path = malloc(directory_length + strlen(import_path) + 1);

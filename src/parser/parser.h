@@ -7,8 +7,8 @@
 #include <type/type.h>
 
 // Grammar
-void parse();
-void parse_source(Program *program, const char *source_path);
+Program *parse(char *source, char *source_path);
+void parse_source(Program *program, char *source_path);
 void parse_function_bodies(Program *program);
 
 #endif

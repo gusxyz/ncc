@@ -1,3 +1,6 @@
+#include "ast/ast.h"
+#include "token/token.h"
+#include "type/type.h"
 #include <parser/parser_internal.h>
 
 #include <da.h>
@@ -8,6 +11,7 @@ static Node *parse_if() {
   Node *node = new_node(NODE_IF, NULL, NULL);
   expect('(');
   node->condition = expression();
+  require_value(node->condition);
   expect(')');
   node->then = parse_statement();
 
@@ -20,6 +24,7 @@ static Node *parse_while() {
   Node *node = new_node(NODE_WHILE, NULL, NULL);
   expect('(');
   node->condition = expression();
+  require_value(node->condition);
   expect(')');
   node->then = parse_statement();
 
@@ -40,6 +45,7 @@ static Node *parse_for() {
   }
   if (!consume(";")) {
     node->condition = expression();
+    require_value(node->condition);
     expect(';');
   }
   if (!consume(")")) {
@@ -99,15 +105,28 @@ Node *parse_statement() {
     return parse_decleration();
 
   if (consume_kind(TOKEN_RETURN)) {
-    node = calloc(1, sizeof(Node));
-    node->kind = NODE_RETURN;
+    node = new_node(NODE_RETURN, NULL, NULL);
+
+    if(consume(";")) {
+      if(current_function->return_type->kind != TYPE_VOID)
+        error_at(global_token->string, "Non-void function must return a value");
+    
+      return node;
+    }
+
+    if(current_function->return_type->kind == TYPE_VOID)
+      error_at(global_token->string, "Void function can not return a value");
+    
     node->left_hand_side = expression();
-  } else {
-    node = expression();
+    
+    if(node->left_hand_side->type->kind == TYPE_VOID)
+      error_at(global_token->string, "Cannot return a void expression as a value");
+
+    expect(';');
+    return node;
   }
 
-  if (!consume(";"))
-    error_at(global_token->string, "Expected a ;");
-
+  node = expression();
+  expect(';');
   return node;
 }

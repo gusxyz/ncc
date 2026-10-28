@@ -14,5 +14,5 @@ assert_error 'Undeclared variable' 'int main() { { x: int=2; } return x; }'
 assert_error 'Variable already declared' 'int main() { x: int=1; x: int=2; return x; }'
 
 # A function body shares the parameter scope, so a local cannot redeclare a parameter
-assert_error 'Variable already declared' 'int f(int x) { x: int=2; return x; } int main() { return f(1); }'
+assert_error 'Variable already declared' 'int f(x: int) { x: int=2; return x; } int main() { return f(1); }'
 

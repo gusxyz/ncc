@@ -42,6 +42,7 @@ static const Keyword keywords[] = {
  {"struct", TOKEN_STRUCT},
  {"sizeof", TOKEN_SIZEOF},
  {"enum", TOKEN_ENUM},
+ {"void", TOKEN_VOID},
 };
 
 // if next token is the expected symbol advance and return true

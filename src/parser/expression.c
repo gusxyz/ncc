@@ -22,7 +22,10 @@ Node *expression() { return assign(); }
 Node *assign() {
   Node *node = logical_or();
   if (consume("=")) {
-    node = new_node(NODE_ASSIGN, node, assign());
+    Node* value = assign();
+    require_value(value);
+
+    node = new_node(NODE_ASSIGN, node, value);
     node->type = node->left_hand_side->type;
   }
   return node;
@@ -30,75 +33,70 @@ Node *assign() {
 
 static Node *equality() {
   Node *node = relational();
+
   for (;;) {
     if (consume("=="))
-      node = new_node(NODE_EQUALS, node, relational());
+      node = new_value_binary(NODE_EQUALS, node, relational());
     else if (consume("!="))
-      node = new_node(NODE_NOT_EQUALS, node, relational());
+      node = new_value_binary(NODE_NOT_EQUALS, node, relational());
     else
       return node;
   }
 }
 
-static Node* shift() {
+static Node *shift() {
   Node *node = add();
+
   for (;;) {
     if (consume("<<"))
-      node = new_node(NODE_SHIFT_LEFT, node, add());
+      node = new_value_binary(NODE_SHIFT_LEFT, node, add());
     else if (consume(">>"))
-      node = new_node(NODE_SHIFT_RIGHT, node, add());
-    else {
+      node = new_value_binary(NODE_SHIFT_RIGHT, node, add());
+    else
       return node;
-    }
-    node->type = type_int;
   }
 }
 
 static Node *relational() {
   Node *node = shift();
+
   for (;;) {
     if (consume(">"))
-      node = new_node(NODE_LESS_THAN, shift(), node);
+      node = new_value_binary(NODE_LESS_THAN, shift(), node);
     else if (consume("<"))
-      node = new_node(NODE_LESS_THAN, node, shift());
+      node = new_value_binary(NODE_LESS_THAN, node, shift());
     else if (consume(">="))
-      node = new_node(NODE_EQUAL_OR_LESS_THAN, shift(), node);
+      node = new_value_binary(NODE_EQUAL_OR_LESS_THAN, shift(), node);
     else if (consume("<="))
-      node = new_node(NODE_EQUAL_OR_LESS_THAN, node, shift());
+      node = new_value_binary(NODE_EQUAL_OR_LESS_THAN, node, shift());
     else
       return node;
   }
 }
 
-static Node* bitwise_and() {
+static Node *bitwise_and() {
   Node *node = equality();
 
-  while(consume("&")) {
-    node = new_node(NODE_BITWISE_AND, node, equality());
-    node->type = type_int;
-  }
+  while (consume("&"))
+    node = new_value_binary(NODE_BITWISE_AND, node, equality());
 
   return node;
 }
 
-static Node* bitwise_xor() {
+static Node *bitwise_xor() {
   Node *node = bitwise_and();
 
-  while(consume("^")) {
-    node = new_node(NODE_BITWISE_XOR, node, bitwise_and());
-    node->type = type_int;
-  }
+  while (consume("^"))
+    node = new_value_binary(NODE_BITWISE_XOR, node, bitwise_and());
 
   return node;
 }
 
-static Node* bitwise_or() {
+static Node *bitwise_or() {
   Node *node = bitwise_xor();
 
-  while(consume("|")) {
-    node = new_node(NODE_BITWISE_OR, node, bitwise_xor());
-    node->type = type_int;
-  }
+  while (consume("|"))
+    node = new_value_binary(NODE_BITWISE_OR, node, bitwise_xor());
 
   return node;
 }
@@ -106,23 +104,34 @@ static Node* bitwise_or() {
 static Node *logical_and() {
   Node *node = bitwise_or();
 
-  while(consume("&&")) {
-    node = new_node(NODE_LOGICAL_AND, node, bitwise_or());
-    node->type = type_int;
-  }
+  while (consume("&&"))
+    node = new_value_binary(NODE_LOGICAL_AND, node, bitwise_or());
 
   return node;
 }
 
 Node *logical_or() {
   Node *node = logical_and();
-  
-  while(consume("||")) {
-    node = new_node(NODE_LOGICAL_OR, node, logical_and());
-    node->type = type_int;
-  }
+
+  while (consume("||"))
+    node = new_value_binary(NODE_LOGICAL_OR, node, logical_and());
 
   return node;
+}
+
+static Node *multiply() {
+  Node *node = cast();
+
+  for (;;) {
+    if (consume("*"))
+      node = new_value_binary(NODE_MULTIPLY, node, cast());
+    else if (consume("/"))
+      node = new_value_binary(NODE_DIVIDE, node, cast());
+    else if (consume("%"))
+      node = new_value_binary(NODE_MODULO, node, cast());
+    else
+      return node;
+  }
 }
 
 static Node *add() {
@@ -137,29 +146,13 @@ static Node *add() {
   }
 }
 
-static Node *multiply() {  
-  Node *node = cast();
-  for (;;) {
-    if (consume("*")) {
-      node = new_node(NODE_MULTIPLY, node, cast());
-    } else if (consume("/")) {
-      node = new_node(NODE_DIVIDE, node, cast());
-    } else if (consume("%")) {
-      node = new_node(NODE_MODULO, node, cast());
-    } else
-      return node;
-
-    node->type = type_int;
-  }
-}
-
 static Node* cast() {
   Token *start = global_token;
   if(consume(("("))) {
     if(is_type_start()) {
       Type *type = parse_type();
       expect(')');
-      Node * node = new_node(NODE_CAST, cast(), node);
+      Node * node = new_node(NODE_CAST, cast(), NULL);
       node->type = type;
       return node;
     }
@@ -184,7 +177,7 @@ static Node *unary() {
       type = unary()->type;
     }
 
-    if(!type || type->size <= 0)
+    if(!type || type->size <= 0 || type->kind == TYPE_VOID)
       error_at(global_token->string, "sizeof requires a complete type.");
 
     return new_node_number(type->size);
@@ -213,6 +206,9 @@ static Node *unary() {
 
     if (!operand->type || operand->type->kind != TYPE_POINTER)
       error("Cannot dereference a non-pointer");
+
+    if (operand->type->base->kind == TYPE_VOID)
+      error("Cannot dereference a pointer to void.");
 
     Node *node = new_node(NODE_DEREFERENCE, operand, NULL);
     node->type = operand->type->base;
@@ -316,7 +312,9 @@ static Node *parse_function_call(Token *identifier_token) {
 
   if (!consume(")")) {
     do {
-      da_append(&node->arguments, assign());
+      Node* argument = assign();
+      require_value(argument);
+      da_append(&node->arguments, argument);
     } while (consume(","));
 
     expect(')');

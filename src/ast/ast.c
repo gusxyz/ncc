@@ -46,8 +46,18 @@ Node *new_node_local_variable(LocalVariable *local_var) {
     node->type = local_var->type;
     return node;
 }
+void require_value(Node *node) {
+  if (!node->type)
+    error("Expression is missing its type");
+
+  if (node->type->kind == TYPE_VOID)
+    error("Void expression cannot be used as a value");
+}
 
 Node *new_additive_node(NodeKind kind, Node *left, Node *right) {
+  require_value(left);
+  require_value(right);
+
   TypeKind left_kind = left->type->kind;
   TypeKind right_kind = right->type->kind;
   bool left_integer = left_kind == TYPE_INT || left_kind == TYPE_U8 || left_kind == TYPE_I64;
@@ -60,6 +70,10 @@ Node *new_additive_node(NodeKind kind, Node *left, Node *right) {
     node->type = type_int;
     return node;
   }
+
+  if ((left_pointer && left->type->base->kind == TYPE_VOID) ||
+    (right_pointer && right->type->base->kind == TYPE_VOID))
+    error("Cannot do pointer arithmetic on a void pointer");
 
   if (left_pointer && right_integer) {
     Node *scaled =
@@ -95,6 +109,15 @@ Node *new_additive_node(NodeKind kind, Node *left, Node *right) {
 
   error("Invalid operands for additive expression");
   return NULL;
+}
+
+Node *new_value_binary(NodeKind kind, Node *left, Node *right) {
+  require_value(left);
+  require_value(right);
+
+  Node *node = new_node(kind, left, right);
+  node->type = type_int;
+  return node;
 }
 
 int evaluate_constant(Node *node) {

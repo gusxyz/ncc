@@ -129,6 +129,7 @@ typedef struct {
   Token *body_tokens;
   LocalVariable *locals;
   Type *return_type;
+  char *source_path;
 } Function;
 
 typedef struct {
@@ -154,7 +155,8 @@ Node *new_node(NodeKind kind, Node *left_hand_side, Node *right_hand_side);
 Node *new_additive_node(NodeKind kind, Node *left, Node *right);
 Node *new_node_number(int value);
 Node *new_node_local_variable(LocalVariable *local_var);
-
+Node *new_value_binary(NodeKind kind, Node *left, Node *right);
+void require_value(Node *node);
 int evaluate_constant(Node *node);
 
 #endif

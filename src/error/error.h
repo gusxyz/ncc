@@ -5,7 +5,7 @@ void set_user_input(char*);
 char *get_user_input();
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
-// error if next token isnt expected token
+void set_source_path(const char *path);
 void expect(char op);
 int expect_number();
 

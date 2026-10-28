@@ -28,10 +28,11 @@ struct Scope {
 };
 
 extern Scope *current_scope;
+extern Program *current_program;
+extern Function *current_function;
 extern Scope global_scope;
 extern int local_offset;
 extern int max_local_offset;
-extern Program *current_program;
 
 // Parser state and program symbols
 bool consume_kind(TokenKind kind);

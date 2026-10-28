@@ -15,5 +15,5 @@ assert 3 'return syscall(1,1,"OK\n",3);'
 assert 42 'return syscall(60,42);'
 
 # runtime tests
-assert_program 3 'int linux_write(int fd, char *buffer, int length) { return syscall(1, fd, buffer, length); } int main() { return linux_write(1, "OK\n", 3); }'
+assert_program 3 'int linux_write(fd: int, buffer: char*, length: int) { return syscall(1, fd, buffer, length); } int main() { return linux_write(1, "OK\n", 3); }'
 

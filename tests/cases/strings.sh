@@ -11,7 +11,7 @@ assert 0 's: char*=""; return *s;'
 assert 195 'a: char*="a"; b: char*="b"; return *a+*b;'
 
 # Passing a string to a function
-assert_program 90 'int first(char *s) { return *s; } int main() { return first("Z"); }'
+assert_program 90 'int first(s: char*) { return *s; } int main() { return first("Z"); }'
 
 # Character escapes
 assert 10 "return '\n';"

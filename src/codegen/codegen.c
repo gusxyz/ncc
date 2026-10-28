@@ -124,6 +124,9 @@ void generate_pre_update(Node *node) {
     ? var->type->base->size
     : 1;
 
+  if (node->type->kind == TYPE_POINTER && node->type->base->kind == TYPE_VOID)
+    error("Cannot increment or decrement a void pointer");
+
   generate_lvalue_address(var);
   emit("pop rax");
   emit("%s %s PTR [rax], %d", op, get_type_size(var->type), step);
@@ -137,6 +140,9 @@ void generate_post_update(Node *node) {
   int step = var->type->kind == TYPE_POINTER
     ? var->type->base->size
     : 1;
+
+  if (node->type->kind == TYPE_POINTER && node->type->base->kind == TYPE_VOID)
+    error("Cannot increment or decrement a void pointer");
 
   generate_lvalue_address(var);
   emit("pop rax");
@@ -261,9 +267,9 @@ void generate_function_call(Node* node){
     emit("mov [rsp], rax");
 
     emit("call %s", node->function_name);
-    
     emit("mov rsp, [rsp]");
-    emit("push rax");
+    if(node->type->kind != TYPE_VOID)
+      emit("push rax");
 }
 
 void generate_program(Program *program) {
@@ -394,7 +400,7 @@ void generate_expression(Node *node) {
   emit("pop rdi");
   emit("pop rax");
 
-  // BInary Operators
+  // Binary Operators
   switch (node->kind) {
   case NODE_ADD:
     emit("add rax, rdi");
@@ -459,11 +465,11 @@ void generate_expression(Node *node) {
 }
 
 void generate_return(Node* node) {
-    generate_expression(node->left_hand_side);
-    emit("pop rax");
-    emit("mov rsp, rbp");
-    emit("pop rbp");
-    emit("ret");
+    if(node->left_hand_side) {
+      generate_expression(node->left_hand_side);
+      emit("pop rax");
+    }
+    epilogue();
 }
 
 void generate_if(Node *node) {
@@ -545,7 +551,8 @@ void generate_for(Node *node) {
 
   if(node->inc) {
     generate_expression(node->inc);
-    emit("pop rax");
+    if (node->inc->type->kind != TYPE_VOID)
+      emit("pop rax");
   }
   emit("jmp .L.loop.%d", id);
   emit_label(".L.end.%d", id);
@@ -577,5 +584,7 @@ void generate_statement(Node *node) {
     return generate_continue();
 
   generate_expression(node);
-  emit("pop rax");
+
+  if (node->type->kind != TYPE_VOID)
+    emit("pop rax");
 }

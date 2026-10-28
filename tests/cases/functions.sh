@@ -24,29 +24,29 @@ assert_error 'No defined main function' 'int helper() { return 42; }'
 assert_error 'No defined main function' ''
 
 # One argument
-assert_program 42 'int identity(int a) { return a; } int main() { return identity(42); }'
+assert_program 42 'int identity(a: int) { return a; } int main() { return identity(42); }'
 
 # Argument order
-assert_program 7 'int subtract(int a, int b) { return a-b; } int main() { return subtract(10,3); }'
+assert_program 7 'int subtract(a: int, b: int) { return a-b; } int main() { return subtract(10,3); }'
 
 # Expressions as arguments
-assert_program 21 'int multiply(int a, int b) { return a*b; } int main() { return multiply(1+2,10-3); }'
+assert_program 21 'int multiply(a: int, b: int) { return a*b; } int main() { return multiply(1+2,10-3); }'
 
 # Local variables as arguments
-assert_program 15 'int add(int a, int b) { return a+b; } int main() { x: int; y: int; x=5; y=10; return add(x,y); }'
+assert_program 15 'int add(a: int, b: int) { return a+b; } int main() { x: int; y: int; x=5; y=10; return add(x,y); }'
 
 # All six registers; subtraction makes argument order matter
-assert_program 43 'int six(int a, int b, int c, int d, int e, int f) { return a-b-c-d-e-f; } int main() { return six(63,1,2,4,5,8); }'
+assert_program 43 'int six(a: int, b: int, c: int, d: int, e: int, f: int) { return a-b-c-d-e-f; } int main() { return six(63,1,2,4,5,8); }'
 
 # Nested calls must preserve already evaluated arguments
-assert_program 42 'int identity(int a) { return a; } int add(int a, int b) { return a+b; } int main() { return add(identity(20),identity(22)); }'
+assert_program 42 'int identity(a: int) { return a; } int add(a: int, b: int) { return a+b; } int main() { return add(identity(20),identity(22)); }'
 
 # Preserve a pending expression value across a call
-assert_program 47 'int add(int a, int b) { return a+b; } int main() { return 5+add(20,22); }'
+assert_program 47 'int add(a: int, b: int) { return a+b; } int main() { return 5+add(20,22); }'
 
 # Changing a parameter must not change the caller's variable
-assert_program 5 'int change(int a) { a=99; return a; } int main() { a: int=5; change(a); return a; }'
+assert_program 5 'int change(a: int) { a=99; return a; } int main() { a: int=5; change(a); return a; }'
 
 # Recursion: every call needs its own parameter storage
-assert_program 120 'int factorial(int n) { if(n<=1) return 1; return n*factorial(n-1); } int main() { return factorial(5); }'
+assert_program 120 'int factorial(n: int) { if(n<=1) return 1; return n*factorial(n-1); } int main() { return factorial(5); }'
 

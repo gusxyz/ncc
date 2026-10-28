@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <error/error.h>
 
 Scope *current_scope;
 Scope global_scope;
@@ -73,7 +74,8 @@ TypeAlias *find_type_alias_in_current_scope(Token *name) {
 
 LocalVariable *new_local_variable(Token *token, Type *type) {
   LocalVariable *local_var = calloc(1, sizeof(LocalVariable));
-
+  if (type->kind == TYPE_VOID)
+    error_at(token->string, "Variable or parameter cannot have type void");
   local_var->name = token->string;
   local_var->length = token->length;
   local_var->type = type;

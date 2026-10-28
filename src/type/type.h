@@ -18,6 +18,7 @@ typedef enum {
     TYPE_I64,
     TYPE_U64,
     TYPE_ENUM,
+    TYPE_VOID,
 } TypeKind;
 
 typedef struct Type Type;
@@ -54,6 +55,7 @@ struct EnumMember {
 
 extern Type *type_int;
 extern Type *type_u8;
+extern Type *type_void;
 
 Type *pointer_to(Type *base);
 bool types_equal(Type *left, Type *right);

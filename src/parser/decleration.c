@@ -1,3 +1,4 @@
+#include "ast/ast.h"
 #include <token/token.h>
 #include <type/type.h>
 #include <parser/parser_internal.h>
@@ -48,6 +49,7 @@ bool is_type_start() {
   case TOKEN_CHAR:
   case TOKEN_STRUCT:
   case TOKEN_ENUM:
+  case TOKEN_VOID:
     return true;
   case TOKEN_IDENTIFIER:
     return find_type_alias(global_token);
@@ -84,13 +86,16 @@ static void parse_struct_body(Type *type) {
 
   while (!consume("}")) {
     if (at_eof())
-      error("Expected '} before end of struct");
+      error("Expected '}' before end of struct");
 
     Type *member_type = parse_type();
     Token *member_name = consume_identifier();
 
     if (!member_name)
       error_at(global_token->string, "Expected a member name");
+    
+    if (member_type->kind == TYPE_VOID)
+      error_at(member_name->string, "Struct member cannot have type void");
 
     expect(';');
 
@@ -155,7 +160,7 @@ void parse_enum_members(Type *type) {
   int value = 0;
   while (!consume("}")) {
     if (at_eof())
-      error("Expected '} before end of enum");
+      error("Expected '}' before end of enum");
 
     Token *name = consume_identifier();
     if (!name)
@@ -209,6 +214,8 @@ Type *parse_type() {
     type = type_u8;
   else if (consume_kind(TOKEN_CHAR))
     type = type_u8;
+  else if (consume_kind(TOKEN_VOID))
+    type = type_void;
   else if (consume_kind(TOKEN_STRUCT))
     type = parse_struct_type();
   else if (consume_kind(TOKEN_ENUM))
@@ -254,6 +261,7 @@ Node *parse_decleration() {
 
   if (consume(":=")) {
     value = assign();
+    require_value(value);
     type = value->type;
 
     if (!type)
@@ -286,8 +294,10 @@ Node *parse_decleration() {
     type = parse_type();
     variable = new_local_variable(name, type);
 
-    if (consume("="))
+    if (consume("=")) {
       value = assign();
+      require_value(value);
+    }
   }
 
   Node *block = new_node(NODE_BLOCK, NULL, NULL);

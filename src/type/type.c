@@ -33,11 +33,20 @@ static Type i64integer_type = {
     .alignment = 8,
 };
 
+static Type void_type = {
+  .kind = TYPE_VOID,
+  .size = 0,
+  .alignment = 1,
+};
 
+Type *type_void = &void_type;
 Type *type_int = &i64integer_type;
 Type *type_u8 = &u8integer_type;
 
 Type *array_of(Type *base, int length) { 
+  if (base->kind == TYPE_VOID)
+    error("Array element cannot have type void");  
+  
   if(length <= 0) 
     error("Invalid array length");
 

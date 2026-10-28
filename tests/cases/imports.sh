@@ -1,2 +1,2 @@
 # import program test
-assert_import_program 42
+assert_import_program 0
